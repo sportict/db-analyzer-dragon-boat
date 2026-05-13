@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="expires" content="0">
 <title>ドラゴンボート レース分析ツール</title>
 <style>
   * { box-sizing: border-box; }
@@ -200,7 +203,10 @@
   }
   .stat-table .name-cell {
     display: flex; align-items: center; gap: 6px; min-width: 0;
+    cursor: pointer; border-radius: 4px; padding: 2px 4px; margin: -2px -4px;
+    transition: background .15s;
   }
+  .stat-table .name-cell:hover { background: #eff6ff; }
   .stat-table .name-cell .swatch {
     width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0;
   }
@@ -956,11 +962,11 @@ function renderStats() {
     return `
       <tr>
         <td>
-          <div class="name-cell">
+          <div class="name-cell" data-race-id="${r.id}" title="クリックで色を変更">
             <span class="swatch" style="background:${r.color}"></span>
             <div style="min-width:0;flex:1;">
-              <div class="label" title="${escapeHtml(r.name)}">${escapeHtml(r.name)}</div>
-              ${(() => { const en = getEventName(r); return en ? `<div style="font-size:10px;color:#6b7280;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHtml(en)}">${escapeHtml(en)}</div>` : ''; })()}
+              <div class="label">${escapeHtml(r.name)}</div>
+              ${(() => { const en = getEventName(r); return en ? `<div style="font-size:10px;color:#6b7280;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(en)}</div>` : ''; })()}
             </div>
           </div>
         </td>
@@ -973,6 +979,13 @@ function renderStats() {
         <td>${maintain.toFixed(1)}</td>
       </tr>`;
   }).join('');
+  // 統計表のレース名セルクリックで色ピッカー
+  tb.querySelectorAll('.name-cell[data-race-id]').forEach(cell => {
+    cell.addEventListener('click', () => {
+      const r = state.races.find(x => String(x.id) === cell.dataset.raceId);
+      if (r) showColorPicker(r, cell);
+    });
+  });
 }
 
 // ========== PNG エクスポート ==========
