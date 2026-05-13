@@ -68,8 +68,25 @@
   .btn:disabled { opacity: .5; cursor: not-allowed; }
 
   /* ---- レース一覧 ---- */
-  .race-list { max-height: 320px; overflow-y: auto; margin: -4px; padding: 4px; }
+  .race-list { max-height: 380px; overflow-y: auto; margin: -4px; padding: 4px; }
   .race-empty { padding: 16px 4px; color: #9ca3af; font-size: 12px; text-align: center; }
+  .loaded-event { margin-bottom: 8px; }
+  .loaded-event-name {
+    font-size: 12px; font-weight: 600; color: #1e3a8a;
+    padding: 8px 10px; background: #dbeafe; border-radius: 6px; margin-bottom: 4px;
+    cursor: pointer; user-select: none; display: flex; align-items: center; gap: 6px;
+    transition: background .15s;
+  }
+  .loaded-event-name:hover { background: #bfdbfe; }
+  .loaded-event-name .chevron {
+    transition: transform .2s; display: inline-block; width: 12px; color: #1e3a8a;
+  }
+  .loaded-event[data-expanded="true"] .loaded-event-name .chevron { transform: rotate(90deg); }
+  .loaded-event-name .count {
+    margin-left: auto; font-size: 10px; color: #1e3a8a; font-weight: normal;
+  }
+  .loaded-event-races { display: none; padding-left: 4px; }
+  .loaded-event[data-expanded="true"] .loaded-event-races { display: block; }
   .race-item {
     display: flex; align-items: center; gap: 8px; padding: 8px 10px;
     border-radius: 6px; background: #f9fafb; font-size: 13px;
@@ -93,6 +110,51 @@
     border-radius: 4px; user-select: none; flex-shrink: 0;
   }
   .race-item .x:hover { color: #ef4444; background: #fef2f2; }
+  .race-item .rename-btn {
+    color: #9ca3af; cursor: pointer; padding: 2px 6px;
+    border-radius: 4px; user-select: none; flex-shrink: 0; font-size: 11px;
+  }
+  .race-item .rename-btn:hover { color: #2563eb; background: #eff6ff; }
+  .race-item .swatch { cursor: pointer; }
+  .race-item .name { cursor: pointer; }
+
+  /* ---- 色選択ポップアップ ---- */
+  .color-picker-popup {
+    position: absolute; z-index: 1000;
+    background: #fff; border: 1px solid #d1d5db; border-radius: 8px;
+    padding: 12px; box-shadow: 0 4px 16px rgba(0,0,0,.15);
+    width: 240px;
+  }
+  .color-picker-title {
+    font-size: 11px; color: #6b7280; margin-bottom: 8px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .color-picker-grid {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;
+    margin-bottom: 10px;
+  }
+  .color-picker-swatch {
+    width: 32px; height: 32px; border-radius: 6px; cursor: pointer;
+    border: 2px solid transparent; transition: transform .1s;
+  }
+  .color-picker-swatch:hover { transform: scale(1.1); }
+  .color-picker-swatch.selected {
+    border-color: #1f2937; box-shadow: 0 0 0 2px #fff inset;
+  }
+  .color-picker-custom {
+    display: flex; align-items: center; gap: 8px;
+    padding-top: 10px; border-top: 1px solid #f3f4f6;
+    font-size: 12px; color: #4b5563;
+  }
+  .color-picker-custom input[type=color] {
+    width: 40px; height: 28px; padding: 0; border: 1px solid #d1d5db;
+    border-radius: 4px; cursor: pointer; background: #fff;
+  }
+  .color-picker-close {
+    position: absolute; top: 4px; right: 8px; cursor: pointer;
+    color: #9ca3af; font-weight: bold;
+  }
+  .color-picker-close:hover { color: #ef4444; }
 
   /* ---- チャート ---- */
   .chart-wrap {
@@ -153,11 +215,23 @@
     padding: 10px 14px; margin-bottom: 12px; font-size: 13px; color: #78350f;
   }
   .team-banner strong { color: #92400e; }
-  .sample-event { margin-bottom: 12px; }
+  .sample-event { margin-bottom: 8px; }
   .sample-event-name {
     font-size: 12px; font-weight: 600; color: #374151;
-    padding: 6px 8px; background: #f3f4f6; border-radius: 4px; margin-bottom: 4px;
+    padding: 8px 10px; background: #f3f4f6; border-radius: 6px; margin-bottom: 4px;
+    cursor: pointer; user-select: none; display: flex; align-items: center; gap: 6px;
+    transition: background .15s;
   }
+  .sample-event-name:hover { background: #e5e7eb; }
+  .sample-event-name .chevron {
+    transition: transform .2s; display: inline-block; width: 12px; color: #6b7280;
+  }
+  .sample-event[data-expanded="true"] .sample-event-name .chevron { transform: rotate(90deg); }
+  .sample-event-name .count {
+    margin-left: auto; font-size: 10px; color: #6b7280; font-weight: normal;
+  }
+  .sample-event-races { display: none; padding-left: 6px; }
+  .sample-event[data-expanded="true"] .sample-event-races { display: block; }
   .sample-race {
     display: flex; align-items: center; gap: 6px; padding: 6px 8px;
     font-size: 12px; cursor: pointer; border-radius: 4px; color: #374151;
@@ -174,6 +248,15 @@
   }
   .sample-empty { padding: 12px 4px; color: #9ca3af; font-size: 12px; text-align: center; }
   .sample-list { max-height: 380px; overflow-y: auto; }
+  .sample-notice {
+    background: #fef3c7; border: 1px solid #fbbf24; border-radius: 6px;
+    padding: 10px 12px; margin-bottom: 10px; font-size: 11px; line-height: 1.5;
+    color: #78350f;
+  }
+  .sample-notice strong { color: #92400e; }
+  .sample-notice a { color: #1e40af; }
+  .sample-list.disabled .sample-race { opacity: 0.5; cursor: not-allowed; }
+  .sample-list.disabled .sample-race:hover { background: transparent; color: #374151; }
 </style>
 </head>
 <body>
@@ -273,6 +356,9 @@ const state = {
   axisMode: 'time',
   raceDist: 250,
 };
+
+// file:// 環境を検出 (ブラウザがCORSで相対fetchを拒否する)
+const IS_FILE_PROTOCOL = (location.protocol === 'file:');
 
 // ========== CSV パーサ ==========
 // Session行から大会日付 YYYY-MM-DD を抽出
@@ -482,6 +568,9 @@ raceDistInput.addEventListener('input', e => {
 document.getElementById('exportPng').addEventListener('click', exportChartPng);
 
 // ========== レース一覧 ==========
+const expandedLoadedEvents = new Set();  // 読み込み済みパネルで展開中の大会
+const _expandedLoadedSeen = new Set();  // 既にデフォルト展開を済ませた大会(初回のみ自動展開)
+
 function renderRaceList() {
   const list = document.getElementById('raceList');
   const count = document.getElementById('raceCount');
@@ -491,53 +580,194 @@ function renderRaceList() {
     return;
   }
   list.innerHTML = '';
-  state.races.forEach((r, i) => {
-    const item = document.createElement('div');
-    item.className = 'race-item';
-    const checked = r.selected ? 'checked' : '';
-    const eventName = getEventName(r);
-    const eventHtml = eventName ? `<div class="event-sub" title="${escapeHtml(eventName)}">📅 ${escapeHtml(eventName)}</div>` : '';
-    item.innerHTML = `
-      <input type="checkbox" ${checked}>
-      <span class="swatch" style="background:${r.color}"></span>
-      <div class="name-wrap">
-        <span class="name" title="クリックで編集">${escapeHtml(r.name)}</span>
-        ${eventHtml}
-      </div>
-      <span class="x" title="削除">×</span>
-    `;
-    item.querySelector('input').addEventListener('change', e => {
-      r.selected = e.target.checked; render();
+
+  // 大会IDでグループ化(出現順を保つ)
+  const groupOrder = [];
+  const groups = new Map();
+  state.races.forEach(r => {
+    const meta = extractMeta(r);
+    const eid = meta.eventId || '__unknown__';
+    const name = getEventName(r) || '(大会不明)';
+    if (!groups.has(eid)) {
+      groups.set(eid, { name, races: [] });
+      groupOrder.push(eid);
+      // 初回出現時はデフォルト展開
+      if (!_expandedLoadedSeen.has(eid)) {
+        expandedLoadedEvents.add(eid);
+        _expandedLoadedSeen.add(eid);
+      }
+    }
+    groups.get(eid).races.push(r);
+  });
+
+  groupOrder.forEach(eid => {
+    const grp = groups.get(eid);
+    const expanded = expandedLoadedEvents.has(eid);
+    const wrap = document.createElement('div');
+    wrap.className = 'loaded-event';
+    wrap.dataset.eventId = eid;
+    wrap.dataset.expanded = expanded;
+
+    const head = document.createElement('div');
+    head.className = 'loaded-event-name';
+    head.innerHTML = `<span class="chevron">▶</span><span>${escapeHtml(grp.name)}</span><span class="count">${grp.races.length}件</span>`;
+    head.addEventListener('click', () => {
+      if (wrap.dataset.expanded === 'true') {
+        wrap.dataset.expanded = 'false';
+        expandedLoadedEvents.delete(eid);
+      } else {
+        wrap.dataset.expanded = 'true';
+        expandedLoadedEvents.add(eid);
+      }
     });
-    item.querySelector('.x').addEventListener('click', () => {
-      state.races.splice(i, 1); render();
+    wrap.appendChild(head);
+
+    const races = document.createElement('div');
+    races.className = 'loaded-event-races';
+    grp.races.forEach(r => {
+      const item = document.createElement('div');
+      item.className = 'race-item';
+      const checked = r.selected ? 'checked' : '';
+      item.innerHTML = `
+        <input type="checkbox" ${checked}>
+        <span class="swatch" style="background:${r.color}" title="クリックで色を変更"></span>
+        <div class="name-wrap">
+          <span class="name" title="クリックで色を変更">${escapeHtml(r.name)}</span>
+        </div>
+        <span class="rename-btn" title="名前を編集">✎</span>
+        <span class="x" title="削除">×</span>
+      `;
+      item.querySelector('input').addEventListener('change', e => {
+        r.selected = e.target.checked; render();
+      });
+      item.querySelector('.x').addEventListener('click', () => {
+        const idx = state.races.findIndex(x => x.id === r.id);
+        if (idx >= 0) state.races.splice(idx, 1);
+        render();
+      });
+      // 色選択(swatch / 名前クリック)
+      const swatchEl = item.querySelector('.swatch');
+      const nameEl = item.querySelector('.name');
+      const openPicker = (anchor) => showColorPicker(r, anchor);
+      swatchEl.addEventListener('click', () => openPicker(swatchEl));
+      nameEl.addEventListener('click', () => openPicker(nameEl));
+      // リネーム(✎ ボタン or 名前のダブルクリック)
+      const startRename = () => {
+        nameEl.setAttribute('contenteditable', 'true');
+        nameEl.focus();
+        const range = document.createRange();
+        range.selectNodeContents(nameEl);
+        const sel = window.getSelection();
+        sel.removeAllRanges(); sel.addRange(range);
+      };
+      item.querySelector('.rename-btn').addEventListener('click', startRename);
+      nameEl.addEventListener('dblclick', e => { e.stopPropagation(); startRename(); });
+      const finishEdit = () => {
+        nameEl.removeAttribute('contenteditable');
+        r.name = nameEl.textContent.trim() || defaultName('レース');
+        nameEl.textContent = r.name;
+        renderStats();
+      };
+      nameEl.addEventListener('blur', finishEdit);
+      nameEl.addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); nameEl.blur(); }
+        if (e.key === 'Escape') { nameEl.textContent = r.name; nameEl.blur(); }
+      });
+      races.appendChild(item);
     });
-    const nameEl = item.querySelector('.name');
-    nameEl.addEventListener('click', () => {
-      nameEl.setAttribute('contenteditable', 'true');
-      nameEl.focus();
-      const range = document.createRange();
-      range.selectNodeContents(nameEl);
-      const sel = window.getSelection();
-      sel.removeAllRanges(); sel.addRange(range);
-    });
-    const finishEdit = () => {
-      nameEl.removeAttribute('contenteditable');
-      r.name = nameEl.textContent.trim() || defaultName('レース' + (i+1));
-      nameEl.textContent = r.name;
-      renderStats();
-    };
-    nameEl.addEventListener('blur', finishEdit);
-    nameEl.addEventListener('keydown', e => {
-      if (e.key === 'Enter') { e.preventDefault(); nameEl.blur(); }
-      if (e.key === 'Escape') { nameEl.textContent = r.name; nameEl.blur(); }
-    });
-    list.appendChild(item);
+    wrap.appendChild(races);
+    list.appendChild(wrap);
   });
 }
 
 function escapeHtml(s) {
   return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+}
+
+// ========== 色選択ポップアップ ==========
+let _colorPickerEl = null;
+let _colorPickerEscHandler = null;
+
+function closeColorPicker() {
+  if (_colorPickerEl) {
+    _colorPickerEl.remove();
+    _colorPickerEl = null;
+  }
+  if (_colorPickerEscHandler) {
+    document.removeEventListener('keydown', _colorPickerEscHandler);
+    document.removeEventListener('click', _outsideClickHandler, true);
+    _colorPickerEscHandler = null;
+  }
+}
+
+let _outsideClickHandler = null;
+
+function showColorPicker(race, anchorEl) {
+  closeColorPicker();
+  const popup = document.createElement('div');
+  popup.className = 'color-picker-popup';
+  // プリセット色 + 追加の暖色/寒色
+  const PALETTE = [
+    '#3b82f6','#ef4444','#10b981','#f59e0b','#8b5cf6',
+    '#ec4899','#14b8a6','#f97316','#0ea5e9','#84cc16',
+    '#dc2626','#7c3aed','#059669','#d97706','#db2777',
+    '#1e3a8a','#991b1b','#064e3b','#78350f','#374151'
+  ];
+  const swatchesHtml = PALETTE.map(col => {
+    const sel = col.toLowerCase() === (race.color || '').toLowerCase() ? 'selected' : '';
+    return `<div class="color-picker-swatch ${sel}" style="background:${col}" data-color="${col}" title="${col}"></div>`;
+  }).join('');
+  popup.innerHTML = `
+    <span class="color-picker-close" title="閉じる">×</span>
+    <div class="color-picker-title">🎨 「${escapeHtml(race.name)}」の色を変更</div>
+    <div class="color-picker-grid">${swatchesHtml}</div>
+    <div class="color-picker-custom">
+      <input type="color" value="${race.color}">
+      <span>カスタム色</span>
+    </div>
+  `;
+  document.body.appendChild(popup);
+
+  // 位置決定: アンカー要素の下に表示、右端ははみ出さない
+  const rect = anchorEl.getBoundingClientRect();
+  const scrollX = window.scrollX || window.pageXOffset;
+  const scrollY = window.scrollY || window.pageYOffset;
+  let left = rect.left + scrollX;
+  let top = rect.bottom + scrollY + 6;
+  const popupWidth = 240;
+  if (left + popupWidth > window.innerWidth + scrollX - 8) {
+    left = window.innerWidth + scrollX - popupWidth - 8;
+  }
+  if (left < 8) left = 8;
+  popup.style.left = `${left}px`;
+  popup.style.top = `${top}px`;
+
+  // イベントハンドラ
+  popup.querySelectorAll('.color-picker-swatch').forEach(el => {
+    el.addEventListener('click', e => {
+      e.stopPropagation();
+      race.color = el.dataset.color;
+      render();
+      closeColorPicker();
+    });
+  });
+  popup.querySelector('input[type=color]').addEventListener('change', e => {
+    race.color = e.target.value;
+    render();
+    closeColorPicker();
+  });
+  popup.querySelector('.color-picker-close').addEventListener('click', closeColorPicker);
+
+  _colorPickerEscHandler = (e) => { if (e.key === 'Escape') closeColorPicker(); };
+  document.addEventListener('keydown', _colorPickerEscHandler);
+
+  _outsideClickHandler = (e) => {
+    if (!popup.contains(e.target)) closeColorPicker();
+  };
+  // 次のtickで登録(現在のクリックを拾わないように)
+  setTimeout(() => document.addEventListener('click', _outsideClickHandler, true), 50);
+
+  _colorPickerEl = popup;
 }
 
 // ========== チャート ==========
@@ -779,7 +1009,17 @@ function exportChartPng() {
 let manifestData = null;
 let raceResults = null;
 
+function _parseInline(id) {
+  const el = document.getElementById(id);
+  if (!el) return null;
+  try { return JSON.parse(el.textContent); } catch (e) { return null; }
+}
+
 async function loadManifest() {
+  // 1. インライン埋込を優先(file://対応)
+  const inline = _parseInline('embedded-manifest');
+  if (inline && inline.events) return inline;
+  // 2. fetch にフォールバック(オンライン環境)
   try {
     const res = await fetch('manifest.json', { cache: 'no-cache' });
     if (!res.ok) return null;
@@ -788,6 +1028,8 @@ async function loadManifest() {
 }
 
 async function loadRaceResults() {
+  const inline = _parseInline('embedded-race-results');
+  if (inline && inline.events) return inline;
   try {
     const res = await fetch('race_results.json', { cache: 'no-cache' });
     if (!res.ok) return null;
@@ -808,7 +1050,14 @@ function extractMeta(race) {
   return { eventId, raceNo: null, klass: null, lane: null, team: null };
 }
 
-// 大会名を取得 (race_results.json から)
+// 既知の大会名(file:// で manifest/race_results.json が読めない場合のフォールバック)
+const KNOWN_EVENTS = {
+  '2025-10-05': '2025/10/05 第19回 KIX国際交流ドラゴンボート大会 (250m)',
+  '2025-11-02': '2025/11/02 天神祭奉納 日本国際選手権 (250m)',
+  '2025-11-16': '2025/11/16 第13回 スモールドラゴンボート日本選手権 (250m)',
+};
+
+// 大会名を取得 (race_results.json > manifest.json > 固定マッピング > eid そのまま)
 function getEventName(race) {
   const meta = extractMeta(race);
   const eid = meta.eventId;
@@ -816,11 +1065,14 @@ function getEventName(race) {
   if (raceResults && raceResults.events && raceResults.events[eid]) {
     return raceResults.events[eid].event_name || eid;
   }
-  // race_results にない場合は manifest から取得
   if (manifestData && manifestData.events) {
     const ev = manifestData.events.find(e => e.id === eid);
     if (ev) return ev.name;
   }
+  if (KNOWN_EVENTS[eid]) return KNOWN_EVENTS[eid];
+  // 最終フォールバック: 日付を整形 (2025-11-16 → 2025/11/16)
+  const m = eid.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (m) return `${m[1]}/${m[2]}/${m[3]}`;
   return eid;
 }
 
@@ -848,6 +1100,8 @@ function lookupOfficialTime(race) {
   return null;
 }
 
+const expandedEvents = new Set();  // 展開中の大会ID
+
 function renderSampleList(filter = '') {
   const panel = document.getElementById('samplePanel');
   const list = document.getElementById('sampleList');
@@ -869,8 +1123,15 @@ function renderSampleList(filter = '') {
     });
     matched += races.length;
     if (!races.length) return;
-    html += `<div class="sample-event">`;
-    html += `<div class="sample-event-name">${escapeHtml(ev.name)}</div>`;
+    // フィルタ中は自動展開、そうでなければユーザの展開状態を尊重
+    const expanded = !!f || expandedEvents.has(ev.id);
+    html += `<div class="sample-event" data-event-id="${escapeHtml(ev.id || ev.name)}" data-expanded="${expanded}">`;
+    html += `<div class="sample-event-name">
+      <span class="chevron">▶</span>
+      <span>${escapeHtml(ev.name)}</span>
+      <span class="count">${races.length}件</span>
+    </div>`;
+    html += `<div class="sample-event-races">`;
     races.forEach(r => {
       const label = r.team ? `${escapeHtml(r.team)} <span style="color:#9ca3af">(${escapeHtml(r.race || '')})</span>` : escapeHtml(r.race || r.file);
       html += `<div class="sample-race" data-file="${escapeHtml(r.file)}" data-name="${escapeHtml(r.team || r.race || r.file)}">
@@ -878,17 +1139,44 @@ function renderSampleList(filter = '') {
         <span class="sample-race-name">${label}</span>
       </div>`;
     });
-    html += `</div>`;
+    html += `</div></div>`;
   });
   if (!matched) html = '<div class="sample-empty">該当するレースが見つかりません</div>';
+  if (IS_FILE_PROTOCOL) {
+    html = `<div class="sample-notice">
+      ⚠️ <strong>ローカル(file://)で開いています</strong><br>
+      ブラウザの制限により、ここから直接ファイルを開くことはできません。<br>
+      以下いずれかの方法でご利用ください:<br>
+      ・公開URL <a href="https://sportict.github.io/db-analyzer-dragon-boat/" target="_blank">db-analyzer-dragon-boat</a> にアクセス<br>
+      ・左の「📁 CSV/XLSXファイルを選択」から直接ファイルを開く
+    </div>` + html;
+  }
   list.innerHTML = html;
+  list.classList.toggle('disabled', IS_FILE_PROTOCOL);
   count.textContent = f ? `(${matched}/${total})` : `(${total}件)`;
+  list.querySelectorAll('.sample-event-name').forEach(el => {
+    el.addEventListener('click', () => {
+      const ev = el.parentElement;
+      const eid = ev.dataset.eventId;
+      if (ev.dataset.expanded === 'true') {
+        ev.dataset.expanded = 'false';
+        expandedEvents.delete(eid);
+      } else {
+        ev.dataset.expanded = 'true';
+        expandedEvents.add(eid);
+      }
+    });
+  });
   list.querySelectorAll('.sample-race').forEach(el => {
     el.addEventListener('click', () => loadSampleByUrl(el.dataset.file, el.dataset.name));
   });
 }
 
 async function loadSampleByUrl(url, displayName) {
+  if (IS_FILE_PROTOCOL) {
+    alert('ローカル環境(file://)では、ブラウザの制限により一覧からの読み込みができません。\n\n左の「📁 CSV/XLSXファイルを選択」ボタンから直接ファイルを開いてください。\n\nまたは公開URL https://sportict.github.io/db-analyzer-dragon-boat/ をご利用ください。');
+    return;
+  }
   // すでに同じURLが読み込み済みならスキップ
   if (state.races.some(r => r._sourceUrl === url)) {
     alert('このレースはすでに読み込み済みです');
@@ -936,14 +1224,2629 @@ function applyUrlParams() {
 }
 
 // ========== 初期化 ==========
-render();
-(async () => {
-  manifestData = await loadManifest();
-  renderSampleList();
-  applyUrlParams();
-  raceResults = await loadRaceResults();
-  if (state.races.length) renderStats();
-})();
+// DOMContentLoaded を待つ(末尾のインラインJSONタグがパースされてから読み込みたい)
+function _initApp() {
+  render();
+  (async () => {
+    manifestData = await loadManifest();
+    renderSampleList();
+    applyUrlParams();
+    raceResults = await loadRaceResults();
+    if (state.races.length) renderStats();
+    renderRaceList();  // 大会名表示を反映
+  })();
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', _initApp);
+} else {
+  _initApp();
+}
+</script>
+
+<!-- ===== インライン JSON データ (file:// 環境用フォールバック) ===== -->
+<script id="embedded-manifest" type="application/json">
+{
+  "title": "ドラゴンボート レース GPS データ",
+  "updated": "2026-05-12",
+  "events": [
+    {
+      "name": "2025/11/02 天神祭奉納 日本国際選手権 (250m)",
+      "id": "2025-11-02",
+      "races": [
+        {
+          "file": "data/2025-11-02/R01_スモール予選_01_チーム☆ニライカナイ.csv",
+          "team": "チーム☆ニライカナイ",
+          "race": "R01 スモール予選"
+        },
+        {
+          "file": "data/2025-11-02/R01_スモール予選_03_TAITAMXDRAGONS.csv",
+          "team": "TAITAMXDRAGONS",
+          "race": "R01 スモール予選"
+        },
+        {
+          "file": "data/2025-11-02/R01_スモール予選_04_関西龍舟バーバリアンズ.csv",
+          "team": "関西龍舟バーバリアンズ",
+          "race": "R01 スモール予選"
+        },
+        {
+          "file": "data/2025-11-02/R01_スモール予選_05_打艇龍舟倶楽部.csv",
+          "team": "打艇龍舟倶楽部",
+          "race": "R01 スモール予選"
+        },
+        {
+          "file": "data/2025-11-02/R02_スモール予選_02_関西龍舟ムファサ.csv",
+          "team": "関西龍舟ムファサ",
+          "race": "R02 スモール予選"
+        },
+        {
+          "file": "data/2025-11-02/R02_スモール予選_03_TOKAITAITAMDRAGONS.csv",
+          "team": "TOKAITAITAMDRAGONS",
+          "race": "R02 スモール予選"
+        },
+        {
+          "file": "data/2025-11-02/R02_スモール予選_04_バナ吹.csv",
+          "team": "バナ吹",
+          "race": "R02 スモール予選"
+        },
+        {
+          "file": "data/2025-11-02/R02_スモール予選_05_YashaDragonsOkinawaB.csv",
+          "team": "YashaDragonsOkinawaB",
+          "race": "R02 スモール予選"
+        },
+        {
+          "file": "data/2025-11-02/R03_スモール予選_01_IHI相生.csv",
+          "team": "IHI相生",
+          "race": "R03 スモール予選"
+        },
+        {
+          "file": "data/2025-11-02/R03_スモール予選_03_Dolphinclub.csv",
+          "team": "Dolphinclub",
+          "race": "R03 スモール予選"
+        },
+        {
+          "file": "data/2025-11-02/R03_スモール予選_04_超越龍舟ビワンコ.csv",
+          "team": "超越龍舟ビワンコ",
+          "race": "R03 スモール予選"
+        },
+        {
+          "file": "data/2025-11-02/R03_スモール予選_05_OCTドラゴンボート倶楽部.csv",
+          "team": "OCTドラゴンボート倶楽部",
+          "race": "R03 スモール予選"
+        },
+        {
+          "file": "data/2025-11-02/R04_スモール予選_02_team河童.csv",
+          "team": "team河童",
+          "race": "R04 スモール予選"
+        },
+        {
+          "file": "data/2025-11-02/R04_スモール予選_03_おこしやす宇治川.csv",
+          "team": "おこしやす宇治川",
+          "race": "R04 スモール予選"
+        },
+        {
+          "file": "data/2025-11-02/R04_スモール予選_05_大阪魂小麦色.csv",
+          "team": "大阪魂小麦色",
+          "race": "R04 スモール予選"
+        },
+        {
+          "file": "data/2025-11-02/R05_スモール予選_03_TOKYODRAGONWILD.csv",
+          "team": "TOKYODRAGONWILD",
+          "race": "R05 スモール予選"
+        },
+        {
+          "file": "data/2025-11-02/R05_スモール予選_04_超越龍舟ポインコ.csv",
+          "team": "超越龍舟ポインコ",
+          "race": "R05 スモール予選"
+        },
+        {
+          "file": "data/2025-11-02/R05_スモール予選_05_一寸防止.csv",
+          "team": "一寸防止",
+          "race": "R05 スモール予選"
+        },
+        {
+          "file": "data/2025-11-02/R06_混合1回戦_03_関西龍舟シンバ.csv",
+          "team": "関西龍舟シンバ",
+          "race": "R06 混合1回戦"
+        },
+        {
+          "file": "data/2025-11-02/R07_混合1回戦_03_TOKYODRAGON.csv",
+          "team": "TOKYODRAGON",
+          "race": "R07 混合1回戦"
+        },
+        {
+          "file": "data/2025-11-02/R07_混合1回戦_04_琵琶湖ドラゴンボートクラブ.csv",
+          "team": "琵琶湖ドラゴンボートクラブ",
+          "race": "R07 混合1回戦"
+        },
+        {
+          "file": "data/2025-11-02/R09_オープン1回戦_03_bp.csv",
+          "team": "bp",
+          "race": "R09 オープン1回戦"
+        },
+        {
+          "file": "data/2025-11-02/R09_オープン1回戦_04_池の里LAKERS.csv",
+          "team": "池の里LAKERS",
+          "race": "R09 オープン1回戦"
+        },
+        {
+          "file": "data/2025-11-02/R14_混合2回戦_02_すいすい丸.csv",
+          "team": "すいすい丸",
+          "race": "R14 混合2回戦"
+        },
+        {
+          "file": "data/2025-11-02/R14_混合2回戦_04_琵琶湖ドラゴンボートクラブ.csv",
+          "team": "琵琶湖ドラゴンボートクラブ",
+          "race": "R14 混合2回戦"
+        },
+        {
+          "file": "data/2025-11-02/R15_女子2回戦_02_YashaDragonsOkinawaA.csv",
+          "team": "YashaDragonsOkinawaA",
+          "race": "R15 女子2回戦"
+        },
+        {
+          "file": "data/2025-11-02/R15_混合2回戦_03_TOKYODRAGON.csv",
+          "team": "TOKYODRAGON",
+          "race": "R15 混合2回戦"
+        },
+        {
+          "file": "data/2025-11-02/R15_混合2回戦_04_東京龍舟.csv",
+          "team": "東京龍舟",
+          "race": "R15 混合2回戦"
+        },
+        {
+          "file": "data/2025-11-02/R16_オープン2回戦_02_好きやねん大阪.csv",
+          "team": "好きやねん大阪",
+          "race": "R16 オープン2回戦"
+        },
+        {
+          "file": "data/2025-11-02/R16_オープン2回戦_03_磯風漕友会.csv",
+          "team": "磯風漕友会",
+          "race": "R16 オープン2回戦"
+        },
+        {
+          "file": "data/2025-11-02/R16_オープン2回戦_04_魚橋水神龍会.csv",
+          "team": "魚橋水神龍会",
+          "race": "R16 オープン2回戦"
+        },
+        {
+          "file": "data/2025-11-02/R17_オープン2回戦_02_池の里LAKERS.csv",
+          "team": "池の里LAKERS",
+          "race": "R17 オープン2回戦"
+        },
+        {
+          "file": "data/2025-11-02/R17_オープン2回戦_03_bp.csv",
+          "team": "bp",
+          "race": "R17 オープン2回戦"
+        },
+        {
+          "file": "data/2025-11-02/R17_オープン2回戦_04_BonOyage.csv",
+          "team": "BonOyage",
+          "race": "R17 オープン2回戦"
+        },
+        {
+          "file": "data/2025-11-02/R18_スモール準決勝_02_TOKYODRAGONWILD.csv",
+          "team": "TOKYODRAGONWILD",
+          "race": "R18 スモール準決勝"
+        },
+        {
+          "file": "data/2025-11-02/R18_スモール準決勝_03_関西龍舟バーバリアンズ.csv",
+          "team": "関西龍舟バーバリアンズ",
+          "race": "R18 スモール準決勝"
+        },
+        {
+          "file": "data/2025-11-02/R18_スモール準決勝_04_Dolphinclub.csv",
+          "team": "Dolphinclub",
+          "race": "R18 スモール準決勝"
+        },
+        {
+          "file": "data/2025-11-02/R18_スモール準決勝_05_TAITAMXDRAGONS.csv",
+          "team": "TAITAMXDRAGONS",
+          "race": "R18 スモール準決勝"
+        },
+        {
+          "file": "data/2025-11-02/R19_スモール準決勝_02_桜ノ宮艇庫前9時丁度.csv",
+          "team": "桜ノ宮艇庫前9時丁度",
+          "race": "R19 スモール準決勝"
+        },
+        {
+          "file": "data/2025-11-02/R19_スモール準決勝_03_関西龍舟ムファサ.csv",
+          "team": "関西龍舟ムファサ",
+          "race": "R19 スモール準決勝"
+        },
+        {
+          "file": "data/2025-11-02/R19_スモール準決勝_04_おこしやす宇治川.csv",
+          "team": "おこしやす宇治川",
+          "race": "R19 スモール準決勝"
+        },
+        {
+          "file": "data/2025-11-02/R19_スモール準決勝_05_IHI相生.csv",
+          "team": "IHI相生",
+          "race": "R19 スモール準決勝"
+        },
+        {
+          "file": "data/2025-11-02/R21_スモールB決勝_03_★超越龍舟ビワンコ.csv",
+          "team": "★超越龍舟ビワンコ",
+          "race": "R21 スモールB決勝"
+        },
+        {
+          "file": "data/2025-11-02/R21_スモールB決勝_04_チーム☆ニライカナイ.csv",
+          "team": "チーム☆ニライカナイ",
+          "race": "R21 スモールB決勝"
+        },
+        {
+          "file": "data/2025-11-02/R22_スモール決勝_03_★Dolphinclub.csv",
+          "team": "★Dolphinclub",
+          "race": "R22 スモール決勝"
+        },
+        {
+          "file": "data/2025-11-02/R22_スモール決勝_04_関西龍舟ムファサ.csv",
+          "team": "関西龍舟ムファサ",
+          "race": "R22 スモール決勝"
+        },
+        {
+          "file": "data/2025-11-02/R23_混合決勝_02_すいすい丸.csv",
+          "team": "すいすい丸",
+          "race": "R23 混合決勝"
+        },
+        {
+          "file": "data/2025-11-02/R23_混合決勝_03_関西龍舟シンバ.csv",
+          "team": "関西龍舟シンバ",
+          "race": "R23 混合決勝"
+        },
+        {
+          "file": "data/2025-11-02/R23_混合決勝_05_TOKYODRAGON.csv",
+          "team": "TOKYODRAGON",
+          "race": "R23 混合決勝"
+        },
+        {
+          "file": "data/2025-11-02/R24_オープン_05_BonOyage.csv",
+          "team": "BonOyage",
+          "race": "R24 オープン"
+        },
+        {
+          "file": "data/2025-11-02/R24_オープン決勝_02_魚橋水神龍会.csv",
+          "team": "魚橋水神龍会",
+          "race": "R24 オープン決勝"
+        },
+        {
+          "file": "data/2025-11-02/R24_オープン決勝_03_磯風漕友会.csv",
+          "team": "磯風漕友会",
+          "race": "R24 オープン決勝"
+        },
+        {
+          "file": "data/2025-11-02/R24_オープン決勝_04_bp.csv",
+          "team": "bp",
+          "race": "R24 オープン決勝"
+        }
+      ]
+    },
+    {
+      "name": "2025/11/16 第13回 スモールドラゴンボート日本選手権 (250m)",
+      "id": "2025-11-16",
+      "races": [
+        {
+          "file": "data/2025-11-16/R17_混合準決勝1_01_関西龍舟シンバ.csv",
+          "team": "関西龍舟シンバ",
+          "race": "R17 混合準決勝1"
+        },
+        {
+          "file": "data/2025-11-16/R18_混合準決勝2_01_津奈木海龍龍神.csv",
+          "team": "津奈木海龍龍神",
+          "race": "R18 混合準決勝2"
+        },
+        {
+          "file": "data/2025-11-16/R19_オープン準決勝1_01_津奈木海龍風神.csv",
+          "team": "津奈木海龍風神",
+          "race": "R19 オープン準決勝1"
+        },
+        {
+          "file": "data/2025-11-16/R20_オープン準決勝2_01_磯風曹友会.csv",
+          "team": "磯風曹友会",
+          "race": "R20 オープン準決勝2"
+        },
+        {
+          "file": "data/2025-11-16/R21_シニア準決勝1_01_沖縄龍舟シニア.csv",
+          "team": "沖縄龍舟シニア",
+          "race": "R21 シニア準決勝1"
+        },
+        {
+          "file": "data/2025-11-16/R22_シニア準決勝2_01_東京龍舟マスターズA.csv",
+          "team": "東京龍舟マスターズA",
+          "race": "R22 シニア準決勝2"
+        },
+        {
+          "file": "data/2025-11-16/R23_女子2回戦_01_GunnersLadies.csv",
+          "team": "GunnersLadies",
+          "race": "R23 女子2回戦"
+        },
+        {
+          "file": "data/2025-11-16/R24_シニア決勝_01_沖縄龍舟シニア.csv",
+          "team": "沖縄龍舟シニア",
+          "race": "R24 シニア決勝"
+        },
+        {
+          "file": "data/2025-11-16/R24_シニア決勝_02_東京龍舟マスターズA.csv",
+          "team": "東京龍舟マスターズA",
+          "race": "R24 シニア決勝"
+        },
+        {
+          "file": "data/2025-11-16/R24_シニア決勝_03_関西龍舟ムファサ.csv",
+          "team": "関西龍舟ムファサ",
+          "race": "R24 シニア決勝"
+        },
+        {
+          "file": "data/2025-11-16/R24_シニア決勝_04_琵琶湖ドラゴンボートクラブ.csv",
+          "team": "琵琶湖ドラゴンボートクラブ",
+          "race": "R24 シニア決勝"
+        },
+        {
+          "file": "data/2025-11-16/R25_混合決勝_01_関西龍舟シンバ.csv",
+          "team": "関西龍舟シンバ",
+          "race": "R25 混合決勝"
+        },
+        {
+          "file": "data/2025-11-16/R25_混合決勝_02_関西龍舟バーバリアンズ.csv",
+          "team": "関西龍舟バーバリアンズ",
+          "race": "R25 混合決勝"
+        },
+        {
+          "file": "data/2025-11-16/R25_混合決勝_03_水俣龍舟.csv",
+          "team": "水俣龍舟",
+          "race": "R25 混合決勝"
+        },
+        {
+          "file": "data/2025-11-16/R25_混合決勝_05_東京龍舟.csv",
+          "team": "東京龍舟",
+          "race": "R25 混合決勝"
+        },
+        {
+          "file": "data/2025-11-16/R26_オープン決勝_01_津奈木海龍風神.csv",
+          "team": "津奈木海龍風神",
+          "race": "R26 オープン決勝"
+        },
+        {
+          "file": "data/2025-11-16/R26_オープン決勝_02_磯風曹友会.csv",
+          "team": "磯風曹友会",
+          "race": "R26 オープン決勝"
+        },
+        {
+          "file": "data/2025-11-16/R26_オープン決勝_03_bp.csv",
+          "team": "bp",
+          "race": "R26 オープン決勝"
+        },
+        {
+          "file": "data/2025-11-16/R26_オープン決勝_05_しげる.csv",
+          "team": "しげる",
+          "race": "R26 オープン決勝"
+        }
+      ]
+    }
+  ]
+}
+</script>
+<script id="embedded-race-results" type="application/json">
+{
+  "title": "ドラゴンボート レース公式結果",
+  "updated": "2026-05-13",
+  "events": {
+    "2025-11-02": {
+      "event_id": "2025-11-02",
+      "event_name": "2025/11/02 天神祭奉納 日本国際選手権",
+      "races": [
+        {
+          "race_no": "R1",
+          "class": "スモール",
+          "stage": "予選①",
+          "start_time": "8:45",
+          "lanes": [
+            {
+              "lane": 1,
+              "team_no": 17,
+              "team": "チーム☆ニライカナイ",
+              "time_str": "1:13.90",
+              "time_sec": 73.9,
+              "rank": 2,
+              "next": "1位→R18③"
+            },
+            {
+              "lane": 2,
+              "team_no": 19,
+              "team": "フォーティーズ",
+              "time_str": "1:23.60",
+              "time_sec": 83.6,
+              "rank": 4,
+              "next": "2位→R10③"
+            },
+            {
+              "lane": 3,
+              "team_no": 23,
+              "team": "TAITAM X DRAGONS",
+              "time_str": "1:14.53",
+              "time_sec": 74.53,
+              "rank": 3,
+              "next": "3位→R11④"
+            },
+            {
+              "lane": 4,
+              "team_no": 29,
+              "team": "関西龍舟バーバリアンズ",
+              "time_str": "1:07.15",
+              "time_sec": 67.15,
+              "rank": 1,
+              "next": "4位→R12②"
+            },
+            {
+              "lane": 5,
+              "team_no": 14,
+              "team": "打艇龍舟倶楽部",
+              "time_str": "1:24.41",
+              "time_sec": 84.41,
+              "rank": 5,
+              "next": "5位→R13⑤"
+            }
+          ]
+        },
+        {
+          "race_no": "R2",
+          "class": "スモール",
+          "stage": "予選②",
+          "start_time": "9:00",
+          "lanes": [
+            {
+              "lane": 2,
+              "team_no": 30,
+              "team": "関西龍舟ムファサ",
+              "time_str": "1:06.84",
+              "time_sec": 66.84,
+              "rank": 1,
+              "next": "2位→R11③"
+            },
+            {
+              "lane": 3,
+              "team_no": 20,
+              "team": "TOKAI TAITAM DRAGONS",
+              "time_str": "1:13.81",
+              "time_sec": 73.81,
+              "rank": 3,
+              "next": "3位→R12④"
+            },
+            {
+              "lane": 4,
+              "team_no": 28,
+              "team": "バナ吹",
+              "time_str": "1:16.06",
+              "time_sec": 76.06,
+              "rank": 4,
+              "next": "4位→R13②"
+            },
+            {
+              "lane": 5,
+              "team_no": 13,
+              "team": "Yasha Dragons Okinawa B",
+              "time_str": "1:12.87",
+              "time_sec": 72.87,
+              "rank": 2,
+              "next": ""
+            }
+          ]
+        },
+        {
+          "race_no": "R3",
+          "class": "スモール",
+          "stage": "予選③",
+          "start_time": "9:15",
+          "lanes": [
+            {
+              "lane": 1,
+              "team_no": 15,
+              "team": "IHI相生",
+              "time_str": "1:10.81",
+              "time_sec": 70.81,
+              "rank": 2,
+              "next": "1位→R18④"
+            },
+            {
+              "lane": 2,
+              "team_no": 22,
+              "team": "チーム未来",
+              "time_str": "1:11.88",
+              "time_sec": 71.88,
+              "rank": 3,
+              "next": "2位→R12③"
+            },
+            {
+              "lane": 3,
+              "team_no": 16,
+              "team": "Dolphin club",
+              "time_str": "1:05.47",
+              "time_sec": 65.47,
+              "rank": 1,
+              "next": "3位→R13④"
+            },
+            {
+              "lane": 4,
+              "team_no": 26,
+              "team": "超越龍舟ビワンコ",
+              "time_str": "1:14.94",
+              "time_sec": 74.94,
+              "rank": 4,
+              "next": "4位→R10⑤"
+            },
+            {
+              "lane": 5,
+              "team_no": 31,
+              "team": "OCTドラゴンボート倶楽部",
+              "time_str": "1:35.79",
+              "time_sec": 95.79,
+              "rank": 5,
+              "next": "5位→R10①"
+            }
+          ]
+        },
+        {
+          "race_no": "R4",
+          "class": "スモール",
+          "stage": "予選④",
+          "start_time": "9:30",
+          "lanes": [
+            {
+              "lane": 2,
+              "team_no": 18,
+              "team": "team河童",
+              "time_str": "1:15.23",
+              "time_sec": 75.23,
+              "rank": 2,
+              "next": "2位→R13③"
+            },
+            {
+              "lane": 3,
+              "team_no": 34,
+              "team": "おこしやす宇治川・源平・龍舟祭",
+              "time_str": "1:11.37",
+              "time_sec": 71.37,
+              "rank": 1,
+              "next": "3位→R10②"
+            },
+            {
+              "lane": 4,
+              "team_no": 24,
+              "team": "チーム風",
+              "time_str": "1:20.40",
+              "time_sec": 80.4,
+              "rank": 3,
+              "next": "4位→R11⑤"
+            },
+            {
+              "lane": 5,
+              "team_no": 33,
+              "team": "大阪魂小麦色",
+              "time_str": "1:27.00",
+              "time_sec": 87.0,
+              "rank": 4,
+              "next": ""
+            }
+          ]
+        },
+        {
+          "race_no": "R5",
+          "class": "スモール",
+          "stage": "予選⑤",
+          "start_time": "9:45",
+          "lanes": [
+            {
+              "lane": 2,
+              "team_no": 21,
+              "team": "桜ノ宮艇庫前９時丁度",
+              "time_str": "1:08.91",
+              "time_sec": 68.91,
+              "rank": 2,
+              "next": "2位→R10④"
+            },
+            {
+              "lane": 3,
+              "team_no": 32,
+              "team": "TOKYO DRAGON WILD",
+              "time_str": "1:04.37",
+              "time_sec": 64.37,
+              "rank": 1,
+              "next": "3位→R11②"
+            },
+            {
+              "lane": 4,
+              "team_no": 25,
+              "team": "超越龍舟ポインコ",
+              "time_str": "1:19.56",
+              "time_sec": 79.56,
+              "rank": 3,
+              "next": "4位→R12⑤"
+            },
+            {
+              "lane": 5,
+              "team_no": 27,
+              "team": "一寸防士",
+              "time_str": "1:21.22",
+              "time_sec": 81.22,
+              "rank": 4,
+              "next": ""
+            }
+          ]
+        },
+        {
+          "race_no": "R6",
+          "class": "混合",
+          "stage": "１回戦①",
+          "start_time": "10:00",
+          "lanes": [
+            {
+              "lane": 2,
+              "team_no": 11,
+              "team": "すいすい丸",
+              "time_str": "0:56.65",
+              "time_sec": 56.65,
+              "rank": 3,
+              "next": "2位→R15④"
+            },
+            {
+              "lane": 3,
+              "team_no": 8,
+              "team": "関西龍舟シンバ",
+              "time_str": "0:54.09",
+              "time_sec": 54.09,
+              "rank": 1,
+              "next": "3位→R14②"
+            },
+            {
+              "lane": 4,
+              "team_no": 9,
+              "team": "東京龍舟",
+              "time_str": "0:55.55",
+              "time_sec": 55.55,
+              "rank": 2,
+              "next": ""
+            }
+          ]
+        },
+        {
+          "race_no": "R7",
+          "class": "混合+女子",
+          "stage": "１回戦②",
+          "start_time": "10:15",
+          "lanes": [
+            {
+              "lane": 2,
+              "team_no": 12,
+              "team": "Yasha Dragons Okinawa A",
+              "time_str": "1:09.85",
+              "time_sec": 69.85,
+              "rank": 3,
+              "next": "混合2位→R14④"
+            },
+            {
+              "lane": 3,
+              "team_no": 10,
+              "team": "TOKYO DRAGON",
+              "time_str": "0:58.47",
+              "time_sec": 58.47,
+              "rank": 1,
+              "next": "女子→R15②"
+            },
+            {
+              "lane": 4,
+              "team_no": 7,
+              "team": "琵琶湖ドラゴンボートクラブ",
+              "time_str": "1:00.40",
+              "time_sec": 60.4,
+              "rank": 2,
+              "next": ""
+            }
+          ]
+        },
+        {
+          "race_no": "R8",
+          "class": "オープン",
+          "stage": "１回戦①",
+          "start_time": "10:30",
+          "lanes": [
+            {
+              "lane": 2,
+              "team_no": 5,
+              "team": "磯風漕友会",
+              "time_str": "0:52.27",
+              "time_sec": 52.27,
+              "rank": 1,
+              "next": "2位→R17④"
+            },
+            {
+              "lane": 3,
+              "team_no": 1,
+              "team": "好きやねん大阪",
+              "time_str": "1:03.57",
+              "time_sec": 63.57,
+              "rank": 3,
+              "next": "3位→R16②"
+            },
+            {
+              "lane": 4,
+              "team_no": 3,
+              "team": "Bon Oyage",
+              "time_str": "1:00.78",
+              "time_sec": 60.78,
+              "rank": 2,
+              "next": ""
+            }
+          ]
+        },
+        {
+          "race_no": "R9",
+          "class": "オープン",
+          "stage": "１回戦②",
+          "start_time": "10:45",
+          "lanes": [
+            {
+              "lane": 2,
+              "team_no": 4,
+              "team": "魚橋水神龍会",
+              "time_str": "0:58.07",
+              "time_sec": 58.07,
+              "rank": 2,
+              "next": "2位→R16④"
+            },
+            {
+              "lane": 3,
+              "team_no": 6,
+              "team": "bp",
+              "time_str": "0:54.22",
+              "time_sec": 54.22,
+              "rank": 1,
+              "next": "3位→R17②"
+            },
+            {
+              "lane": 4,
+              "team_no": 2,
+              "team": "池の里LAKERS！",
+              "time_str": "1:03.47",
+              "time_sec": 63.47,
+              "rank": 3,
+              "next": ""
+            }
+          ]
+        },
+        {
+          "race_no": "R10",
+          "class": "スモール",
+          "stage": "敗者復活①",
+          "start_time": "11:00",
+          "lanes": [
+            {
+              "lane": 1,
+              "team_no": 31,
+              "team": "OCTドラゴンボート倶楽部",
+              "time_str": "1:33.22",
+              "time_sec": 93.22,
+              "rank": 5,
+              "next": "1位→R19②"
+            },
+            {
+              "lane": 2,
+              "team_no": 24,
+              "team": "チーム風",
+              "time_str": "1:31.46",
+              "time_sec": 91.46,
+              "rank": 4,
+              "next": "2位→ﾀｲﾑ上位"
+            },
+            {
+              "lane": 3,
+              "team_no": 17,
+              "team": "チーム☆ニライカナイ",
+              "time_str": "1:19.00",
+              "time_sec": 79.0,
+              "rank": 3,
+              "next": "敗者復活ﾀｲﾑ上位"
+            },
+            {
+              "lane": 4,
+              "team_no": 21,
+              "team": "桜ノ宮艇庫前９時丁度",
+              "time_str": "1:15.47",
+              "time_sec": 75.47,
+              "rank": 1,
+              "next": "6位～10位→R21"
+            },
+            {
+              "lane": 5,
+              "team_no": 26,
+              "team": "超越龍舟ビワンコ",
+              "time_str": "1:18.00",
+              "time_sec": 78.0,
+              "rank": 2,
+              "next": ""
+            }
+          ]
+        },
+        {
+          "race_no": "R11",
+          "class": "スモール",
+          "stage": "敗者復活②",
+          "start_time": "11:15",
+          "lanes": [
+            {
+              "lane": 2,
+              "team_no": 25,
+              "team": "超越龍舟ポインコ",
+              "time_str": "1:28.46",
+              "time_sec": 88.46,
+              "rank": 3,
+              "next": "2位→ﾀｲﾑ上位"
+            },
+            {
+              "lane": 3,
+              "team_no": 13,
+              "team": "Yasha Dragons Okinawa B",
+              "time_str": "1:16.19",
+              "time_sec": 76.19,
+              "rank": 2,
+              "next": "敗者復活ﾀｲﾑ上位"
+            },
+            {
+              "lane": 4,
+              "team_no": 23,
+              "team": "TAITAM X DRAGONS",
+              "time_str": "1:16.00",
+              "time_sec": 76.0,
+              "rank": 1,
+              "next": "6位～10位→R21"
+            },
+            {
+              "lane": 5,
+              "team_no": 33,
+              "team": "大阪魂小麦色",
+              "time_str": "1:43.44",
+              "time_sec": 103.44,
+              "rank": 4,
+              "next": ""
+            }
+          ]
+        },
+        {
+          "race_no": "R12",
+          "class": "スモール",
+          "stage": "敗者復活③",
+          "start_time": "11:30",
+          "lanes": [
+            {
+              "lane": 2,
+              "team_no": 19,
+              "team": "フォーティーズ",
+              "time_str": "1:32.80",
+              "time_sec": 92.8,
+              "rank": 4,
+              "next": "2位→ﾀｲﾑ上位"
+            },
+            {
+              "lane": 3,
+              "team_no": 15,
+              "team": "IHI相生",
+              "time_str": "1:17.62",
+              "time_sec": 77.62,
+              "rank": 1,
+              "next": "敗者復活ﾀｲﾑ上位"
+            },
+            {
+              "lane": 4,
+              "team_no": 20,
+              "team": "TOKAI TAITAM DRAGONS",
+              "time_str": "1:25.63",
+              "time_sec": 85.63,
+              "rank": 2,
+              "next": "6位～10位→R21"
+            },
+            {
+              "lane": 5,
+              "team_no": 27,
+              "team": "一寸防士",
+              "time_str": "1:26.37",
+              "time_sec": 86.37,
+              "rank": 3,
+              "next": ""
+            }
+          ]
+        },
+        {
+          "race_no": "R13",
+          "class": "スモール",
+          "stage": "敗者復活④",
+          "start_time": "11:45",
+          "lanes": [
+            {
+              "lane": 2,
+              "team_no": 28,
+              "team": "バナ吹",
+              "time_str": "1:27.53",
+              "time_sec": 87.53,
+              "rank": 2,
+              "next": "2位→ﾀｲﾑ上位"
+            },
+            {
+              "lane": 3,
+              "team_no": 18,
+              "team": "team河童",
+              "time_str": "1:29.68",
+              "time_sec": 89.68,
+              "rank": 3,
+              "next": "敗者復活ﾀｲﾑ上位"
+            },
+            {
+              "lane": 4,
+              "team_no": 22,
+              "team": "チーム未来",
+              "time_str": "1:24.00",
+              "time_sec": 84.0,
+              "rank": 1,
+              "next": "6位～10位→R21"
+            },
+            {
+              "lane": 5,
+              "team_no": 14,
+              "team": "打艇龍舟倶楽部",
+              "time_str": "1:35.60",
+              "time_sec": 95.6,
+              "rank": 4,
+              "next": ""
+            }
+          ]
+        },
+        {
+          "race_no": "R14",
+          "class": "混合",
+          "stage": "２回戦①",
+          "start_time": "12:45",
+          "lanes": [
+            {
+              "lane": 2,
+              "team_no": 11,
+              "team": "すいすい丸",
+              "time_str": "1:06.81",
+              "time_sec": 66.81,
+              "rank": 2,
+              "next": "1位～4位はR23"
+            },
+            {
+              "lane": 3,
+              "team_no": 8,
+              "team": "関西龍舟シンバ",
+              "time_str": "1:03.56",
+              "time_sec": 63.56,
+              "rank": 1,
+              "next": ""
+            },
+            {
+              "lane": 4,
+              "team_no": 7,
+              "team": "琵琶湖ドラゴンボートクラブ",
+              "time_str": "1:12.00",
+              "time_sec": 72.0,
+              "rank": 3,
+              "next": ""
+            }
+          ]
+        },
+        {
+          "race_no": "R15",
+          "class": "混合+女子",
+          "stage": "２回戦②",
+          "start_time": "13:00",
+          "lanes": [
+            {
+              "lane": 2,
+              "team_no": 12,
+              "team": "Yasha Dragons Okinawa A",
+              "time_str": "1:26.00",
+              "time_sec": 86.0,
+              "rank": 3,
+              "next": "1位～4位はR23"
+            },
+            {
+              "lane": 3,
+              "team_no": 10,
+              "team": "TOKYO DRAGON",
+              "time_str": "1:07.56",
+              "time_sec": 67.56,
+              "rank": 2,
+              "next": "女子→R23①"
+            },
+            {
+              "lane": 4,
+              "team_no": 9,
+              "team": "東京龍舟",
+              "time_str": "1:07.00",
+              "time_sec": 67.0,
+              "rank": 1,
+              "next": ""
+            }
+          ]
+        },
+        {
+          "race_no": "R16",
+          "class": "オープン",
+          "stage": "２回戦①",
+          "start_time": "13:15",
+          "lanes": [
+            {
+              "lane": 2,
+              "team_no": 1,
+              "team": "好きやねん大阪",
+              "time_str": "1:18.38",
+              "time_sec": 78.38,
+              "rank": 3,
+              "next": "2位→R24②"
+            },
+            {
+              "lane": 3,
+              "team_no": 5,
+              "team": "磯風漕友会",
+              "time_str": "1:01.78",
+              "time_sec": 61.78,
+              "rank": 1,
+              "next": "3位→ﾀｲﾑ上位"
+            },
+            {
+              "lane": 4,
+              "team_no": 4,
+              "team": "魚橋水神龍会",
+              "time_str": "1:10.27",
+              "time_sec": 70.27,
+              "rank": 2,
+              "next": ""
+            }
+          ]
+        },
+        {
+          "race_no": "R17",
+          "class": "オープン",
+          "stage": "２回戦②",
+          "start_time": "13:30",
+          "lanes": [
+            {
+              "lane": 2,
+              "team_no": 2,
+              "team": "池の里LAKERS！",
+              "time_str": "1:14.64",
+              "time_sec": 74.64,
+              "rank": 3,
+              "next": "2位→R24⑤"
+            },
+            {
+              "lane": 3,
+              "team_no": 6,
+              "team": "bp",
+              "time_str": "1:02.35",
+              "time_sec": 62.35,
+              "rank": 1,
+              "next": "3位→ﾀｲﾑ上位"
+            },
+            {
+              "lane": 4,
+              "team_no": 3,
+              "team": "Bon Oyage",
+              "time_str": "1:13.75",
+              "time_sec": 73.75,
+              "rank": 2,
+              "next": ""
+            }
+          ]
+        },
+        {
+          "race_no": "R18",
+          "class": "スモール",
+          "stage": "準決勝①",
+          "start_time": "13:45",
+          "lanes": [
+            {
+              "lane": 1,
+              "team_no": 22,
+              "team": "チーム未来",
+              "time_str": "1:31.58",
+              "time_sec": 91.58,
+              "rank": 5,
+              "next": "1位→R22③"
+            },
+            {
+              "lane": 2,
+              "team_no": 32,
+              "team": "TOKYO DRAGON WILD",
+              "time_str": "1:17.27",
+              "time_sec": 77.27,
+              "rank": 3,
+              "next": "2位→R22②"
+            },
+            {
+              "lane": 3,
+              "team_no": 29,
+              "team": "関西龍舟バーバリアンズ",
+              "time_str": "1:14.89",
+              "time_sec": 74.89,
+              "rank": 2,
+              "next": "3位→ﾀｲﾑ上位"
+            },
+            {
+              "lane": 4,
+              "team_no": 16,
+              "team": "Dolphin club",
+              "time_str": "1:13.97",
+              "time_sec": 73.97,
+              "rank": 1,
+              "next": "4位以下→NR"
+            },
+            {
+              "lane": 5,
+              "team_no": 23,
+              "team": "TAITAM X DRAGONS",
+              "time_str": "1:24.55",
+              "time_sec": 84.55,
+              "rank": 4,
+              "next": ""
+            }
+          ]
+        },
+        {
+          "race_no": "R19",
+          "class": "スモール",
+          "stage": "準決勝②",
+          "start_time": "14:00",
+          "lanes": [
+            {
+              "lane": 1,
+              "team_no": 13,
+              "team": "Yasha Dragons Okinawa B",
+              "time_str": "1:29.33",
+              "time_sec": 89.33,
+              "rank": 4,
+              "next": "1位→R22④"
+            },
+            {
+              "lane": 2,
+              "team_no": 21,
+              "team": "桜ノ宮艇庫前９時丁度",
+              "time_str": "1:24.44",
+              "time_sec": 84.44,
+              "rank": 2,
+              "next": "2位→R22⑤"
+            },
+            {
+              "lane": 3,
+              "team_no": 30,
+              "team": "関西龍舟ムファサ",
+              "time_str": "1:17.53",
+              "time_sec": 77.53,
+              "rank": 1,
+              "next": "3位→ﾀｲﾑ上位"
+            },
+            {
+              "lane": 4,
+              "team_no": 34,
+              "team": "おこしやす宇治川・源平・龍舟祭",
+              "time_str": "1:29.91",
+              "time_sec": 89.91,
+              "rank": 5,
+              "next": "4位以下→NR"
+            },
+            {
+              "lane": 5,
+              "team_no": 15,
+              "team": "IHI相生",
+              "time_str": "1:27.59",
+              "time_sec": 87.59,
+              "rank": 3,
+              "next": ""
+            }
+          ]
+        },
+        {
+          "race_no": "R20",
+          "class": "フレンドシップ",
+          "stage": "14:30",
+          "start_time": "",
+          "lanes": [
+            {
+              "lane": 2,
+              "team_no": 48,
+              "team": "チーム天満橋",
+              "time_str": "2:38.00",
+              "time_sec": 158.0,
+              "rank": 3,
+              "next": ""
+            },
+            {
+              "lane": 3,
+              "team_no": 49,
+              "team": "はちけんや号",
+              "time_str": "2:03.26",
+              "time_sec": 123.26,
+              "rank": 1,
+              "next": ""
+            },
+            {
+              "lane": 4,
+              "team_no": 50,
+              "team": "大阪天神丸",
+              "time_str": "2:04.51",
+              "time_sec": 124.51,
+              "rank": 2,
+              "next": ""
+            }
+          ]
+        },
+        {
+          "race_no": "R21",
+          "class": "スモール",
+          "stage": "Ｂ決勝",
+          "start_time": "15:00",
+          "lanes": [
+            {
+              "lane": 1,
+              "team_no": 28,
+              "team": "バナ吹",
+              "time_str": "1:37.80",
+              "time_sec": 97.8,
+              "rank": 5,
+              "next": ""
+            },
+            {
+              "lane": 2,
+              "team_no": 20,
+              "team": "TOKAI TAITAM DRAGONS",
+              "time_str": "1:35.36",
+              "time_sec": 95.36,
+              "rank": 4,
+              "next": ""
+            },
+            {
+              "lane": 3,
+              "team_no": 26,
+              "team": "超越龍舟ビワンコ",
+              "time_str": "1:30.26",
+              "time_sec": 90.26,
+              "rank": 2,
+              "next": ""
+            },
+            {
+              "lane": 4,
+              "team_no": 17,
+              "team": "チーム☆ニライカナイ",
+              "time_str": "1:29.31",
+              "time_sec": 89.31,
+              "rank": 1,
+              "next": ""
+            },
+            {
+              "lane": 5,
+              "team_no": 27,
+              "team": "一寸防士",
+              "time_str": "1:35.22",
+              "time_sec": 95.22,
+              "rank": 3,
+              "next": ""
+            }
+          ]
+        },
+        {
+          "race_no": "R22",
+          "class": "スモール",
+          "stage": "決勝",
+          "start_time": "15:15",
+          "lanes": [
+            {
+              "lane": 1,
+              "team_no": 32,
+              "team": "TOKYO DRAGON WILD",
+              "time_str": "1:18.97",
+              "time_sec": 78.97,
+              "rank": 4,
+              "next": ""
+            },
+            {
+              "lane": 2,
+              "team_no": 29,
+              "team": "関西龍舟バーバリアンズ",
+              "time_str": "1:14.52",
+              "time_sec": 74.52,
+              "rank": 1,
+              "next": ""
+            },
+            {
+              "lane": 3,
+              "team_no": 16,
+              "team": "Dolphin club",
+              "time_str": "1:15.27",
+              "time_sec": 75.27,
+              "rank": 2,
+              "next": ""
+            },
+            {
+              "lane": 4,
+              "team_no": 30,
+              "team": "関西龍舟ムファサ",
+              "time_str": "1:15.65",
+              "time_sec": 75.65,
+              "rank": 3,
+              "next": ""
+            },
+            {
+              "lane": 5,
+              "team_no": 21,
+              "team": "桜ノ宮艇庫前９時丁度",
+              "time_str": "1:26.88",
+              "time_sec": 86.88,
+              "rank": 5,
+              "next": ""
+            }
+          ]
+        },
+        {
+          "race_no": "R23",
+          "class": "混合+女子",
+          "stage": "決勝",
+          "start_time": "15:30",
+          "lanes": [
+            {
+              "lane": 1,
+              "team_no": 12,
+              "team": "Yasha Dragons Okinawa A",
+              "time_str": "1:23.74",
+              "time_sec": 83.74,
+              "rank": null,
+              "next": ""
+            },
+            {
+              "lane": 2,
+              "team_no": 11,
+              "team": "すいすい丸",
+              "time_str": "1:06.62",
+              "time_sec": 66.62,
+              "rank": 3,
+              "next": ""
+            },
+            {
+              "lane": 3,
+              "team_no": 8,
+              "team": "関西龍舟シンバ",
+              "time_str": "1:04.19",
+              "time_sec": 64.19,
+              "rank": 1,
+              "next": ""
+            },
+            {
+              "lane": 4,
+              "team_no": 9,
+              "team": "東京龍舟",
+              "time_str": "1:04.41",
+              "time_sec": 64.41,
+              "rank": 2,
+              "next": ""
+            },
+            {
+              "lane": 5,
+              "team_no": 10,
+              "team": "TOKYO DRAGON",
+              "time_str": "1:06.92",
+              "time_sec": 66.92,
+              "rank": 4,
+              "next": ""
+            }
+          ]
+        },
+        {
+          "race_no": "R24",
+          "class": "オープン",
+          "stage": "決勝",
+          "start_time": "15:45",
+          "lanes": [
+            {
+              "lane": 1,
+              "team_no": 2,
+              "team": "池の里LAKERS！",
+              "time_str": "1:14.62",
+              "time_sec": 74.62,
+              "rank": 4,
+              "next": ""
+            },
+            {
+              "lane": 2,
+              "team_no": 4,
+              "team": "魚橋水神龍会",
+              "time_str": "1:10.88",
+              "time_sec": 70.88,
+              "rank": 3,
+              "next": ""
+            },
+            {
+              "lane": 3,
+              "team_no": 5,
+              "team": "磯風漕友会",
+              "time_str": "1:00.57",
+              "time_sec": 60.57,
+              "rank": 1,
+              "next": ""
+            },
+            {
+              "lane": 4,
+              "team_no": 6,
+              "team": "bp",
+              "time_str": "1:00.65",
+              "time_sec": 60.65,
+              "rank": 2,
+              "next": ""
+            },
+            {
+              "lane": 5,
+              "team_no": 3,
+              "team": "Bon Oyage",
+              "time_str": "1:15.50",
+              "time_sec": 75.5,
+              "rank": 5,
+              "next": ""
+            }
+          ]
+        }
+      ]
+    },
+    "2025-11-16": {
+      "event_id": "2025-11-16",
+      "event_name": "2025/11/16 第13回 スモールドラゴンボート日本選手権",
+      "races": [
+        {
+          "race_no": "R1",
+          "class": "混合",
+          "stage": "予選①",
+          "start_time": "9:15",
+          "lanes": [
+            {
+              "lane": 1,
+              "team_no": 24,
+              "team": "すいすい丸トレイン",
+              "time_str": "1:10.56",
+              "time_sec": 70.56,
+              "rank": 2,
+              "next": "1位→R17①"
+            },
+            {
+              "lane": 2,
+              "team_no": 21,
+              "team": "水俣龍舟",
+              "time_str": "1:10.79",
+              "time_sec": 70.79,
+              "rank": 3,
+              "next": "2位→R11①"
+            },
+            {
+              "lane": 3,
+              "team_no": 19,
+              "team": "関西龍舟シンバ",
+              "time_str": "1:09.58",
+              "time_sec": 69.58,
+              "rank": 1,
+              "next": "3位→R12②"
+            },
+            {
+              "lane": 4,
+              "team_no": 16,
+              "team": "琵琶湖ドラゴンボートクラブ MAX",
+              "time_str": "1:15.44",
+              "time_sec": 75.44,
+              "rank": 4,
+              "next": "4位→R11③"
+            }
+          ]
+        },
+        {
+          "race_no": "R2",
+          "class": "混合",
+          "stage": "予選②",
+          "start_time": "9:27",
+          "lanes": [
+            {
+              "lane": 1,
+              "team_no": 25,
+              "team": "すいすい丸工場",
+              "time_str": "1:20.49",
+              "time_sec": 80.49,
+              "rank": 4,
+              "next": "1位→R18①"
+            },
+            {
+              "lane": 2,
+              "team_no": 18,
+              "team": "TOKYO DRAGON",
+              "time_str": "1:16.03",
+              "time_sec": 76.03,
+              "rank": 2,
+              "next": "2位→R12①"
+            },
+            {
+              "lane": 3,
+              "team_no": 22,
+              "team": "Bon Oyage B",
+              "time_str": "1:19.59",
+              "time_sec": 79.59,
+              "rank": 3,
+              "next": "3位→R11④"
+            },
+            {
+              "lane": 4,
+              "team_no": 23,
+              "team": "津奈木海龍 雷神",
+              "time_str": "1:15.00",
+              "time_sec": 75.0,
+              "rank": 1,
+              "next": "4位→R12④"
+            }
+          ]
+        },
+        {
+          "race_no": "R3",
+          "class": "混合",
+          "stage": "予選③",
+          "start_time": "9:39",
+          "lanes": [
+            {
+              "lane": 1,
+              "team_no": 17,
+              "team": "東京龍舟",
+              "time_str": "1:10.12",
+              "time_sec": 70.12,
+              "rank": 1,
+              "next": "1位→R17②"
+            },
+            {
+              "lane": 2,
+              "team_no": 20,
+              "team": "関西龍舟バーバリアンズ",
+              "time_str": "1:11.12",
+              "time_sec": 71.12,
+              "rank": 2,
+              "next": "2位→R11②"
+            },
+            {
+              "lane": 3,
+              "team_no": 15,
+              "team": "Ｕｍｉｈｉ",
+              "time_str": "1:13.28",
+              "time_sec": 73.28,
+              "rank": 3,
+              "next": "3位→R12③"
+            }
+          ]
+        },
+        {
+          "race_no": "R4",
+          "class": "オープン",
+          "stage": "予選①",
+          "start_time": "9:51",
+          "lanes": [
+            {
+              "lane": 1,
+              "team_no": 7,
+              "team": "bp next",
+              "time_str": "1:15.88",
+              "time_sec": 75.88,
+              "rank": 4,
+              "next": "1位→R19①"
+            },
+            {
+              "lane": 2,
+              "team_no": 14,
+              "team": "津奈木海龍 風神",
+              "time_str": "1:09.53",
+              "time_sec": 69.53,
+              "rank": 1,
+              "next": "2位→R13①"
+            },
+            {
+              "lane": 3,
+              "team_no": 9,
+              "team": "魚橋水神龍会",
+              "time_str": "1:14.55",
+              "time_sec": 74.55,
+              "rank": 3,
+              "next": "3位→R14②"
+            },
+            {
+              "lane": 4,
+              "team_no": 1,
+              "team": "しげる",
+              "time_str": "1:12.00",
+              "time_sec": 72.0,
+              "rank": 2,
+              "next": "4位→R15③"
+            }
+          ]
+        },
+        {
+          "race_no": "R5",
+          "class": "オープン",
+          "stage": "予選②",
+          "start_time": "10:03",
+          "lanes": [
+            {
+              "lane": 1,
+              "team_no": 10,
+              "team": "魚橋水神龍会 2nd",
+              "time_str": "1:16.41",
+              "time_sec": 76.41,
+              "rank": 2,
+              "next": "1位→R20①"
+            },
+            {
+              "lane": 2,
+              "team_no": 4,
+              "team": "チーム未来",
+              "time_str": "1:18.51",
+              "time_sec": 78.51,
+              "rank": 4,
+              "next": "2位→R14①"
+            },
+            {
+              "lane": 3,
+              "team_no": 2,
+              "team": "IHI相生",
+              "time_str": "1:18.37",
+              "time_sec": 78.37,
+              "rank": 3,
+              "next": "3位→R15②"
+            },
+            {
+              "lane": 4,
+              "team_no": 13,
+              "team": "磯風漕友会",
+              "time_str": "1:05.25",
+              "time_sec": 65.25,
+              "rank": 1,
+              "next": "4位→R13④"
+            }
+          ]
+        },
+        {
+          "race_no": "R6",
+          "class": "オープン",
+          "stage": "予選③",
+          "start_time": "10:15",
+          "lanes": [
+            {
+              "lane": 1,
+              "team_no": 6,
+              "team": "ｂｐ",
+              "time_str": "1:09.06",
+              "time_sec": 69.06,
+              "rank": 1,
+              "next": "1位→R19②"
+            },
+            {
+              "lane": 2,
+              "team_no": 3,
+              "team": "龍人",
+              "time_str": "1:18.27",
+              "time_sec": 78.27,
+              "rank": 2,
+              "next": "2位→R15①"
+            },
+            {
+              "lane": 3,
+              "team_no": 12,
+              "team": "R.吹龍クラブ",
+              "time_str": "1:19.53",
+              "time_sec": 79.53,
+              "rank": 3,
+              "next": "3位→R13③"
+            }
+          ]
+        },
+        {
+          "race_no": "R7",
+          "class": "オープン",
+          "stage": "予選④",
+          "start_time": "10:27",
+          "lanes": [
+            {
+              "lane": 1,
+              "team_no": 8,
+              "team": "Bon Oyage A",
+              "time_str": "1:12.78",
+              "time_sec": 72.78,
+              "rank": 1,
+              "next": "1位→R20②"
+            },
+            {
+              "lane": 2,
+              "team_no": 5,
+              "team": "池の里LAKERS！",
+              "time_str": "1:13.66",
+              "time_sec": 73.66,
+              "rank": 2,
+              "next": "2位→R13②"
+            },
+            {
+              "lane": 3,
+              "team_no": 11,
+              "team": "小寺製作所",
+              "time_str": "1:14.13",
+              "time_sec": 74.13,
+              "rank": 3,
+              "next": "3位→R14③"
+            }
+          ]
+        },
+        {
+          "race_no": "R8",
+          "class": "シニア",
+          "stage": "予選①",
+          "start_time": "10:39",
+          "lanes": [
+            {
+              "lane": 1,
+              "team_no": 28,
+              "team": "琵琶湖ドラゴンボートクラブ",
+              "time_str": "1:17.69",
+              "time_sec": 77.69,
+              "rank": 3,
+              "next": "1位→R21①"
+            },
+            {
+              "lane": 2,
+              "team_no": 34,
+              "team": "Dragon Boat Club G．Ｐ．Ｏ",
+              "time_str": "1:19.91",
+              "time_sec": 79.91,
+              "rank": 4,
+              "next": "2位→R16①"
+            },
+            {
+              "lane": 3,
+              "team_no": 32,
+              "team": "沖縄龍舟 シニア",
+              "time_str": "1:11.39",
+              "time_sec": 71.39,
+              "rank": 1,
+              "next": "3位→R16③"
+            },
+            {
+              "lane": 4,
+              "team_no": 30,
+              "team": "東京龍舟マスターズＣ",
+              "time_str": "1:17.62",
+              "time_sec": 77.62,
+              "rank": 2,
+              "next": "4位→R16⑤"
+            }
+          ]
+        },
+        {
+          "race_no": "R9",
+          "class": "シニア",
+          "stage": "予選②",
+          "start_time": "10:51",
+          "lanes": [
+            {
+              "lane": 1,
+              "team_no": 33,
+              "team": "ｂｐ シニア",
+              "time_str": "1:11.28",
+              "time_sec": 71.28,
+              "rank": 3,
+              "next": "1位→R22①"
+            },
+            {
+              "lane": 2,
+              "team_no": 31,
+              "team": "関西龍舟ムファサ",
+              "time_str": "1:10.51",
+              "time_sec": 70.51,
+              "rank": 2,
+              "next": "2位→R16②"
+            },
+            {
+              "lane": 3,
+              "team_no": 29,
+              "team": "東京龍舟マスターズＡ",
+              "time_str": "1:10.12",
+              "time_sec": 70.12,
+              "rank": 1,
+              "next": "3位→R16④"
+            }
+          ]
+        },
+        {
+          "race_no": "R10",
+          "class": "女子",
+          "stage": "１回戦",
+          "start_time": "11:03",
+          "lanes": [
+            {
+              "lane": 1,
+              "team_no": 26,
+              "team": "東京龍舟プラチナ",
+              "time_str": "1:19.28",
+              "time_sec": 79.28,
+              "rank": 2,
+              "next": "1位→10点"
+            },
+            {
+              "lane": 2,
+              "team_no": 27,
+              "team": "Gunners Ladies",
+              "time_str": "1:18.52",
+              "time_sec": 78.52,
+              "rank": 1,
+              "next": "2位→5点"
+            }
+          ]
+        },
+        {
+          "race_no": "R11",
+          "class": "混合",
+          "stage": "敗者復活①",
+          "start_time": "11:15",
+          "lanes": [
+            {
+              "lane": 1,
+              "team_no": 24,
+              "team": "すいすい丸トレイン",
+              "time_str": "1:14.07",
+              "time_sec": 74.07,
+              "rank": 2,
+              "next": "1位→R18②"
+            },
+            {
+              "lane": 2,
+              "team_no": 20,
+              "team": "関西龍舟バーバリアンズ",
+              "time_str": "1:13.44",
+              "time_sec": 73.44,
+              "rank": 1,
+              "next": "2位→R17④"
+            },
+            {
+              "lane": 3,
+              "team_no": 16,
+              "team": "琵琶湖ドラゴンボートクラブ MAX",
+              "time_str": "1:18.47",
+              "time_sec": 78.47,
+              "rank": 4,
+              "next": "3位→ﾀｲﾑ上位"
+            },
+            {
+              "lane": 4,
+              "team_no": 22,
+              "team": "Bon Oyage B",
+              "time_str": "1:17.76",
+              "time_sec": 77.76,
+              "rank": 3,
+              "next": "4位以下→NR"
+            }
+          ]
+        },
+        {
+          "race_no": "R12",
+          "class": "混合",
+          "stage": "敗者復活②",
+          "start_time": "11:27",
+          "lanes": [
+            {
+              "lane": 1,
+              "team_no": 18,
+              "team": "TOKYO DRAGON",
+              "time_str": "1:17.53",
+              "time_sec": 77.53,
+              "rank": 4,
+              "next": "1位→R17③"
+            },
+            {
+              "lane": 2,
+              "team_no": 21,
+              "team": "水俣龍舟",
+              "time_str": "1:13.97",
+              "time_sec": 73.97,
+              "rank": 1,
+              "next": "2位→R18③"
+            },
+            {
+              "lane": 3,
+              "team_no": 15,
+              "team": "Ｕｍｉｈｉ",
+              "time_str": "1:16.61",
+              "time_sec": 76.61,
+              "rank": 2,
+              "next": "3位→ﾀｲﾑ上位"
+            },
+            {
+              "lane": 4,
+              "team_no": 25,
+              "team": "すいすい丸工場",
+              "time_str": "1:17.19",
+              "time_sec": 77.19,
+              "rank": 3,
+              "next": "4位以下→NR"
+            }
+          ]
+        },
+        {
+          "race_no": "R13",
+          "class": "オープン",
+          "stage": "敗者復活①",
+          "start_time": "11:39",
+          "lanes": [
+            {
+              "lane": 1,
+              "team_no": 1,
+              "team": "しげる",
+              "time_str": "1:08.16",
+              "time_sec": 68.16,
+              "rank": 1,
+              "next": "1位→R19③"
+            },
+            {
+              "lane": 2,
+              "team_no": 5,
+              "team": "池の里LAKERS！",
+              "time_str": "1:13.44",
+              "time_sec": 73.44,
+              "rank": 2,
+              "next": "2位→R20④"
+            },
+            {
+              "lane": 3,
+              "team_no": 12,
+              "team": "R.吹龍クラブ",
+              "time_str": "1:15.86",
+              "time_sec": 75.86,
+              "rank": 3,
+              "next": "3位以下NR"
+            },
+            {
+              "lane": 4,
+              "team_no": 4,
+              "team": "チーム未来",
+              "time_str": "1:17.28",
+              "time_sec": 77.28,
+              "rank": 4,
+              "next": ""
+            }
+          ]
+        },
+        {
+          "race_no": "R14",
+          "class": "オープン",
+          "stage": "敗者復活②",
+          "start_time": "11:51",
+          "lanes": [
+            {
+              "lane": 1,
+              "team_no": 10,
+              "team": "魚橋水神龍会 2nd",
+              "time_str": "1:19.22",
+              "time_sec": 79.22,
+              "rank": 3,
+              "next": "1位→R20③"
+            },
+            {
+              "lane": 2,
+              "team_no": 9,
+              "team": "魚橋水神龍会",
+              "time_str": "1:14.13",
+              "time_sec": 74.13,
+              "rank": 1,
+              "next": "2位→R19⑤"
+            },
+            {
+              "lane": 3,
+              "team_no": 11,
+              "team": "小寺製作所",
+              "time_str": "1:16.78",
+              "time_sec": 76.78,
+              "rank": 2,
+              "next": "3位以下NR"
+            }
+          ]
+        },
+        {
+          "race_no": "R15",
+          "class": "オープン",
+          "stage": "敗者復活③",
+          "start_time": "12:03",
+          "lanes": [
+            {
+              "lane": 1,
+              "team_no": 3,
+              "team": "龍人",
+              "time_str": "1:14.22",
+              "time_sec": 74.22,
+              "rank": 1,
+              "next": "1位→R19④"
+            },
+            {
+              "lane": 2,
+              "team_no": 2,
+              "team": "IHI相生",
+              "time_str": "1:17.52",
+              "time_sec": 77.52,
+              "rank": 3,
+              "next": "2位→R20⑤"
+            },
+            {
+              "lane": 3,
+              "team_no": 7,
+              "team": "bp next",
+              "time_str": "1:15.56",
+              "time_sec": 75.56,
+              "rank": 2,
+              "next": "3位以下NR"
+            }
+          ]
+        },
+        {
+          "race_no": "R16",
+          "class": "シニア",
+          "stage": "敗者復活",
+          "start_time": "12:15",
+          "lanes": [
+            {
+              "lane": 1,
+              "team_no": 30,
+              "team": "東京龍舟マスターズＣ",
+              "time_str": "1:17.81",
+              "time_sec": 77.81,
+              "rank": 3,
+              "next": "1位→R21②"
+            },
+            {
+              "lane": 2,
+              "team_no": 31,
+              "team": "関西龍舟ムファサ",
+              "time_str": "1:13.62",
+              "time_sec": 73.62,
+              "rank": 1,
+              "next": "2位→R22②"
+            },
+            {
+              "lane": 3,
+              "team_no": 28,
+              "team": "琵琶湖ドラゴンボートクラブ",
+              "time_str": "1:18.24",
+              "time_sec": 78.24,
+              "rank": 4,
+              "next": "3位→R21③"
+            },
+            {
+              "lane": 4,
+              "team_no": 33,
+              "team": "ｂｐ シニア",
+              "time_str": "1:14.47",
+              "time_sec": 74.47,
+              "rank": 2,
+              "next": "4位→R22③"
+            },
+            {
+              "lane": 5,
+              "team_no": 34,
+              "team": "Dragon Boat Club G．Ｐ．Ｏ",
+              "time_str": "1:20.40",
+              "time_sec": 80.4,
+              "rank": 5,
+              "next": "5位NR"
+            }
+          ]
+        },
+        {
+          "race_no": "R17",
+          "class": "混合",
+          "stage": "準決勝①",
+          "start_time": "13:15",
+          "lanes": [
+            {
+              "lane": 1,
+              "team_no": 19,
+              "team": "関西龍舟シンバ",
+              "time_str": "1:12.03",
+              "time_sec": 72.03,
+              "rank": 1,
+              "next": "1位→R25①"
+            },
+            {
+              "lane": 2,
+              "team_no": 17,
+              "team": "東京龍舟",
+              "time_str": "1:12.50",
+              "time_sec": 72.5,
+              "rank": 3,
+              "next": "2位→R25③"
+            },
+            {
+              "lane": 3,
+              "team_no": 21,
+              "team": "水俣龍舟",
+              "time_str": "1:12.43",
+              "time_sec": 72.43,
+              "rank": 2,
+              "next": "3位→ﾀｲﾑ上位"
+            },
+            {
+              "lane": 4,
+              "team_no": 24,
+              "team": "すいすい丸トレイン",
+              "time_str": "1:12.87",
+              "time_sec": 72.87,
+              "rank": 4,
+              "next": "4位以下→NR"
+            }
+          ]
+        },
+        {
+          "race_no": "R18",
+          "class": "混合",
+          "stage": "準決勝②",
+          "start_time": "13:27",
+          "lanes": [
+            {
+              "lane": 1,
+              "team_no": 23,
+              "team": "津奈木海龍 雷神",
+              "time_str": "1:14.25",
+              "time_sec": 74.25,
+              "rank": 2,
+              "next": "1位→R25②"
+            },
+            {
+              "lane": 2,
+              "team_no": 20,
+              "team": "関西龍舟バーバリアンズ",
+              "time_str": "1:13.47",
+              "time_sec": 73.47,
+              "rank": 1,
+              "next": "2位→R25④"
+            },
+            {
+              "lane": 3,
+              "team_no": 15,
+              "team": "Ｕｍｉｈｉ",
+              "time_str": "1:16.61",
+              "time_sec": 76.61,
+              "rank": 4,
+              "next": "3位→ﾀｲﾑ上位"
+            },
+            {
+              "lane": 4,
+              "team_no": 25,
+              "team": "すいすい丸工場",
+              "time_str": "1:16.12",
+              "time_sec": 76.12,
+              "rank": 3,
+              "next": "4位以下→NR"
+            }
+          ]
+        },
+        {
+          "race_no": "R19",
+          "class": "オープン",
+          "stage": "準決勝①",
+          "start_time": "13:39",
+          "lanes": [
+            {
+              "lane": 1,
+              "team_no": 14,
+              "team": "津奈木海龍 風神",
+              "time_str": "1:06.78",
+              "time_sec": 66.78,
+              "rank": 1,
+              "next": "1位→R26①"
+            },
+            {
+              "lane": 2,
+              "team_no": 6,
+              "team": "ｂｐ",
+              "time_str": "1:07.62",
+              "time_sec": 67.62,
+              "rank": 2,
+              "next": "2位→R26③"
+            },
+            {
+              "lane": 3,
+              "team_no": 1,
+              "team": "しげる",
+              "time_str": "1:10.02",
+              "time_sec": 70.02,
+              "rank": 3,
+              "next": "3位→ﾀｲﾑ上位"
+            },
+            {
+              "lane": 4,
+              "team_no": 3,
+              "team": "龍人",
+              "time_str": "1:18.26",
+              "time_sec": 78.26,
+              "rank": 5,
+              "next": "4位以下→NR"
+            },
+            {
+              "lane": 5,
+              "team_no": 11,
+              "team": "小寺製作所",
+              "time_str": "1:15.84",
+              "time_sec": 75.84,
+              "rank": 4,
+              "next": ""
+            }
+          ]
+        },
+        {
+          "race_no": "R20",
+          "class": "オープン",
+          "stage": "準決勝②",
+          "start_time": "13:51",
+          "lanes": [
+            {
+              "lane": 1,
+              "team_no": 13,
+              "team": "磯風漕友会",
+              "time_str": "1:06.28",
+              "time_sec": 66.28,
+              "rank": 1,
+              "next": "1位→R26②"
+            },
+            {
+              "lane": 2,
+              "team_no": 8,
+              "team": "Bon Oyage A",
+              "time_str": "1:15.26",
+              "time_sec": 75.26,
+              "rank": 4,
+              "next": "2位→R26④"
+            },
+            {
+              "lane": 3,
+              "team_no": 9,
+              "team": "魚橋水神龍会",
+              "time_str": "1:13.50",
+              "time_sec": 73.5,
+              "rank": 3,
+              "next": "3位→ﾀｲﾑ上位"
+            },
+            {
+              "lane": 4,
+              "team_no": 5,
+              "team": "池の里LAKERS！",
+              "time_str": "1:16.62",
+              "time_sec": 76.62,
+              "rank": 5,
+              "next": "4位以下→NR"
+            },
+            {
+              "lane": 5,
+              "team_no": 7,
+              "team": "bp next",
+              "time_str": "1:09.91",
+              "time_sec": 69.91,
+              "rank": 2,
+              "next": ""
+            }
+          ]
+        },
+        {
+          "race_no": "R21",
+          "class": "シニア",
+          "stage": "準決勝①",
+          "start_time": "14:03",
+          "lanes": [
+            {
+              "lane": 1,
+              "team_no": 32,
+              "team": "沖縄龍舟 シニア",
+              "time_str": "1:09.75",
+              "time_sec": 69.75,
+              "rank": 1,
+              "next": "1位→R24①"
+            },
+            {
+              "lane": 2,
+              "team_no": 31,
+              "team": "関西龍舟ムファサ",
+              "time_str": "1:14.59",
+              "time_sec": 74.59,
+              "rank": 2,
+              "next": "2位→R24③"
+            },
+            {
+              "lane": 3,
+              "team_no": 30,
+              "team": "東京龍舟マスターズＣ",
+              "time_str": "1:17.00",
+              "time_sec": 77.0,
+              "rank": 3,
+              "next": "3位以下NR"
+            }
+          ]
+        },
+        {
+          "race_no": "R22",
+          "class": "シニア",
+          "stage": "準決勝②",
+          "start_time": "14:15",
+          "lanes": [
+            {
+              "lane": 1,
+              "team_no": 29,
+              "team": "東京龍舟マスターズＡ",
+              "time_str": "1:13.46",
+              "time_sec": 73.46,
+              "rank": 1,
+              "next": "1位→R24②"
+            },
+            {
+              "lane": 2,
+              "team_no": 33,
+              "team": "ｂｐ シニア",
+              "time_str": "1:22.61",
+              "time_sec": 82.61,
+              "rank": 3,
+              "next": "2位→R24④"
+            },
+            {
+              "lane": 3,
+              "team_no": 28,
+              "team": "琵琶湖ドラゴンボートクラブ",
+              "time_str": "1:18.19",
+              "time_sec": 78.19,
+              "rank": 2,
+              "next": "3位以下NR"
+            }
+          ]
+        },
+        {
+          "race_no": "R23",
+          "class": "女子",
+          "stage": "２回戦",
+          "start_time": "14:35",
+          "lanes": [
+            {
+              "lane": 1,
+              "team_no": 27,
+              "team": "Gunners Ladies",
+              "time_str": "1:18.09",
+              "time_sec": 78.09,
+              "rank": 1,
+              "next": "1位→10点"
+            },
+            {
+              "lane": 2,
+              "team_no": 26,
+              "team": "東京龍舟プラチナ",
+              "time_str": "1:18.85",
+              "time_sec": 78.85,
+              "rank": 2,
+              "next": "2位→5点"
+            }
+          ]
+        },
+        {
+          "race_no": "R24",
+          "class": "シニア",
+          "stage": "決勝",
+          "start_time": "14:47",
+          "lanes": [
+            {
+              "lane": 1,
+              "team_no": 32,
+              "team": "沖縄龍舟 シニア",
+              "time_str": "1:11.18",
+              "time_sec": 71.18,
+              "rank": 1,
+              "next": ""
+            },
+            {
+              "lane": 2,
+              "team_no": 29,
+              "team": "東京龍舟マスターズＡ",
+              "time_str": "1:11.75",
+              "time_sec": 71.75,
+              "rank": 2,
+              "next": ""
+            },
+            {
+              "lane": 3,
+              "team_no": 31,
+              "team": "関西龍舟ムファサ",
+              "time_str": "1:13.38",
+              "time_sec": 73.38,
+              "rank": 3,
+              "next": ""
+            },
+            {
+              "lane": 4,
+              "team_no": 28,
+              "team": "琵琶湖ドラゴンボートクラブ",
+              "time_str": "1:19.62",
+              "time_sec": 79.62,
+              "rank": 4,
+              "next": ""
+            }
+          ]
+        },
+        {
+          "race_no": "R25",
+          "class": "混合",
+          "stage": "決勝",
+          "start_time": "15:17",
+          "lanes": [
+            {
+              "lane": 1,
+              "team_no": 19,
+              "team": "関西龍舟シンバ",
+              "time_str": "1:12.44",
+              "time_sec": 72.44,
+              "rank": 1,
+              "next": ""
+            },
+            {
+              "lane": 2,
+              "team_no": 20,
+              "team": "関西龍舟バーバリアンズ",
+              "time_str": "1:13.44",
+              "time_sec": 73.44,
+              "rank": 4,
+              "next": ""
+            },
+            {
+              "lane": 3,
+              "team_no": 21,
+              "team": "水俣龍舟",
+              "time_str": "1:13.22",
+              "time_sec": 73.22,
+              "rank": 3,
+              "next": ""
+            },
+            {
+              "lane": 4,
+              "team_no": 23,
+              "team": "津奈木海龍 雷神",
+              "time_str": "1:14.19",
+              "time_sec": 74.19,
+              "rank": 5,
+              "next": ""
+            },
+            {
+              "lane": 5,
+              "team_no": 17,
+              "team": "東京龍舟",
+              "time_str": "1:12.78",
+              "time_sec": 72.78,
+              "rank": 2,
+              "next": ""
+            }
+          ]
+        },
+        {
+          "race_no": "R26",
+          "class": "オープン",
+          "stage": "決勝",
+          "start_time": "15:29",
+          "lanes": [
+            {
+              "lane": 1,
+              "team_no": 14,
+              "team": "津奈木海龍 風神",
+              "time_str": "1:07.60",
+              "time_sec": 67.6,
+              "rank": 3,
+              "next": ""
+            },
+            {
+              "lane": 2,
+              "team_no": 13,
+              "team": "磯風漕友会",
+              "time_str": "1:06.06",
+              "time_sec": 66.06,
+              "rank": 1,
+              "next": ""
+            },
+            {
+              "lane": 3,
+              "team_no": 6,
+              "team": "ｂｐ",
+              "time_str": "1:07.11",
+              "time_sec": 67.11,
+              "rank": 2,
+              "next": ""
+            },
+            {
+              "lane": 4,
+              "team_no": 7,
+              "team": "bp next",
+              "time_str": "1:10.47",
+              "time_sec": 70.47,
+              "rank": 4,
+              "next": ""
+            },
+            {
+              "lane": 5,
+              "team_no": 1,
+              "team": "しげる",
+              "time_str": "1:10.59",
+              "time_sec": 70.59,
+              "rank": 5,
+              "next": ""
+            }
+          ]
+        }
+      ]
+    },
+    "2025-10-05": {
+      "event_id": "2025-10-05",
+      "event_name": "2025/10/05 第19回 KIX国際交流ドラゴンボート大会",
+      "races": [
+        {
+          "race_no": "R31",
+          "class": "スモール",
+          "stage": "準決勝①",
+          "start_time": "14:30",
+          "lanes": [
+            {
+              "lane": 5,
+              "team_no": 42,
+              "team": "FedEx DRIVE",
+              "time_str": "1:07.47",
+              "time_sec": 67.47,
+              "rank": 1,
+              "next": ""
+            },
+            {
+              "lane": 6,
+              "team_no": 10,
+              "team": "|*柑＆認",
+              "time_str": "0:59.25",
+              "time_sec": 59.25,
+              "rank": 6,
+              "next": ""
+            }
+          ]
+        },
+        {
+          "race_no": "R25",
+          "class": "男女混合",
+          "stage": "準決勝①",
+          "start_time": "15:15",
+          "lanes": [
+            {
+              "lane": 5,
+              "team_no": 27,
+              "team": "打艇風味",
+              "time_str": "1:04.97",
+              "time_sec": 64.97,
+              "rank": 3,
+              "next": ""
+            }
+          ]
+        },
+        {
+          "race_no": "R27",
+          "class": "オープン",
+          "stage": "準決勝①",
+          "start_time": "15:45",
+          "lanes": [
+            {
+              "lane": 5,
+              "team_no": 3,
+              "team": "Meleo Doragons",
+              "time_str": "1:04.43",
+              "time_sec": 64.43,
+              "rank": 5,
+              "next": ""
+            }
+          ]
+        }
+      ],
+      "_note": "OCR解析のため一部欠損あり。元のExcelファイルが入手できれば再生成推奨"
+    }
+  }
+}
 </script>
 </body>
 </html>
