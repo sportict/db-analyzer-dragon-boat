@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ドラゴンボート レース分析ツール</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Yu Gothic UI", "Hiragino Sans", "Meiryo", "Segoe UI", sans-serif;
+    background: linear-gradient(135deg,#eff6ff 0%,#e0e7ff 100%);
+    color: #1f2937;
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 20px; }
+
+  header {
+    background: #fff; border-radius: 12px; padding: 18px 24px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.06); margin-bottom: 16px;
+  }
+  header h1 { margin: 0 0 4px 0; font-size: 22px; color: #1e3a8a; }
+  header p { margin: 0; color: #6b7280; font-size: 13px; }
+
+  .grid {
+    display: grid; grid-template-columns: 320px 1fr; gap: 16px; align-items: start;
+  }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+
+  .panel {
+    background: #fff; border-radius: 12px; padding: 16px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.06); margin-bottom: 16px;
+  }
+  .panel h2 {
+    font-size: 14px; margin: 0 0 12px 0; color: #1e3a8a;
+    border-bottom: 2px solid #1e3a8a; padding-bottom: 6px;
+  }
+
+  /* ---- ファイル選択エリア ---- */
+  .file-input { display: none; }
+  .pick-btn {
+    display: block; width: 100%; padding: 14px;
+    background: #2563eb; color: #fff; border: none; border-radius: 8px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    transition: background .15s;
+  }
+  .pick-btn:hover { background: #1d4ed8; }
+  .drop-area {
+    margin-top: 10px; padding: 18px 12px; text-align: center;
+    border: 2px dashed #93c5fd; border-radius: 8px;
+    background: #f0f9ff; color: #1e40af; font-size: 12px;
+    transition: background .15s, border-color .15s;
+  }
+  .drop-area.drag { background: #dbeafe; border-color: #2563eb; }
+  .pick-actions { margin-top: 12px; display: flex; gap: 8px; }
+  .btn {
+    padding: 8px 14px; border: 1px solid transparent; border-radius: 6px;
+    background: #fff; color: #2563eb; font-size: 13px; cursor: pointer;
+    font-weight: 500; transition: background .15s;
+    border-color: #93c5fd;
+  }
+  .btn:hover { background: #eff6ff; }
+  .btn.primary { background: #2563eb; color: #fff; border-color: #2563eb; }
+  .btn.primary:hover { background: #1d4ed8; }
+  .btn.danger { background: #fff; color: #ef4444; border-color: #fca5a5; }
+  .btn.danger:hover { background: #fef2f2; }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+  /* ---- レース一覧 ---- */
+  .race-list { max-height: 320px; overflow-y: auto; margin: -4px; padding: 4px; }
+  .race-empty { padding: 16px 4px; color: #9ca3af; font-size: 12px; text-align: center; }
+  .race-item {
+    display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+    border-radius: 6px; background: #f9fafb; font-size: 13px;
+    margin-bottom: 6px; border: 1px solid #e5e7eb;
+  }
+  .race-item .name-wrap { flex: 1; min-width: 0; overflow: hidden; }
+  .race-item .event-sub {
+    font-size: 10px; color: #6b7280; padding: 0 4px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .race-item input[type=checkbox] { margin: 0; cursor: pointer; flex-shrink: 0; }
+  .race-item .swatch { width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; }
+  .race-item .name {
+    flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    cursor: text; padding: 2px 4px; border-radius: 3px; min-width: 0;
+  }
+  .race-item .name:hover { background: #e5e7eb; }
+  .race-item .name[contenteditable=true] { background: #fff; outline: 2px solid #2563eb; }
+  .race-item .x {
+    color: #9ca3af; cursor: pointer; padding: 2px 8px; font-weight: bold;
+    border-radius: 4px; user-select: none; flex-shrink: 0;
+  }
+  .race-item .x:hover { color: #ef4444; background: #fef2f2; }
+
+  /* ---- チャート ---- */
+  .chart-wrap {
+    background: #fff; border-radius: 12px; padding: 16px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.06); margin-bottom: 16px;
+  }
+  .chart-controls {
+    display: flex; gap: 14px; align-items: center; flex-wrap: wrap;
+    margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #f3f4f6;
+  }
+  .control-group { display: flex; align-items: center; gap: 6px; }
+  .control-group label { font-size: 13px; color: #4b5563; font-weight: 500; }
+  .toggle { display: inline-flex; background: #f3f4f6; border-radius: 6px; padding: 2px; }
+  .toggle button {
+    background: transparent; border: none; padding: 6px 12px; font-size: 13px;
+    cursor: pointer; border-radius: 4px; color: #4b5563; font-weight: 500;
+  }
+  .toggle button.active { background: #2563eb; color: #fff; }
+  .num-input {
+    width: 64px; padding: 5px 8px; border: 1px solid #d1d5db; border-radius: 4px;
+    font-size: 13px; font-variant-numeric: tabular-nums;
+  }
+  .spacer { flex: 1; }
+
+  #chart {
+    width: 100%; height: auto; display: block; background: #fff;
+  }
+  .chart-hint {
+    font-size: 11px; color: #9ca3af; margin-top: 8px; line-height: 1.5;
+  }
+
+  /* ---- 統計サマリ ---- */
+  .stat-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .stat-table th {
+    background: #dbeafe; padding: 8px 10px; text-align: left;
+    color: #1e3a8a; font-weight: 600; font-size: 12px;
+    border-bottom: 1px solid #93c5fd;
+  }
+  .stat-table td { padding: 8px 10px; border-bottom: 1px solid #f3f4f6; }
+  .stat-table tbody tr:hover { background: #f9fafb; }
+  .stat-table td:nth-child(n+2) {
+    text-align: right; font-variant-numeric: tabular-nums; color: #374151;
+  }
+  .stat-table .name-cell {
+    display: flex; align-items: center; gap: 6px; min-width: 0;
+  }
+  .stat-table .name-cell .swatch {
+    width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0;
+  }
+  .stat-table .name-cell .label {
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .stat-empty { color: #9ca3af; text-align: center; padding: 24px; font-size: 13px; }
+
+  /* ---- サンプル一覧パネル ---- */
+  .team-banner {
+    background: #fef3c7; border: 1px solid #fbbf24; border-radius: 8px;
+    padding: 10px 14px; margin-bottom: 12px; font-size: 13px; color: #78350f;
+  }
+  .team-banner strong { color: #92400e; }
+  .sample-event { margin-bottom: 12px; }
+  .sample-event-name {
+    font-size: 12px; font-weight: 600; color: #374151;
+    padding: 6px 8px; background: #f3f4f6; border-radius: 4px; margin-bottom: 4px;
+  }
+  .sample-race {
+    display: flex; align-items: center; gap: 6px; padding: 6px 8px;
+    font-size: 12px; cursor: pointer; border-radius: 4px; color: #374151;
+    transition: background .15s;
+  }
+  .sample-race:hover { background: #eff6ff; color: #1e3a8a; }
+  .sample-race .sample-race-mark { color: #2563eb; font-size: 14px; flex-shrink: 0; }
+  .sample-race .sample-race-name {
+    flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .sample-search {
+    width: 100%; padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 4px;
+    font-size: 12px; margin-bottom: 8px;
+  }
+  .sample-empty { padding: 12px 4px; color: #9ca3af; font-size: 12px; text-align: center; }
+  .sample-list { max-height: 380px; overflow-y: auto; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>🐉 ドラゴンボート レース分析ツール</h1>
+  <p>GPS データ(CSV)からスピード曲線を可視化・比較し、チーム別フィードバックを作成します。</p>
+  <div id="teamBanner" class="team-banner" style="display:none;margin-top:12px;"></div>
+</header>
+
+<div class="grid">
+
+  <!-- ============== 左パネル ============== -->
+  <div>
+    <div class="panel">
+      <h2>1. CSVを読み込む</h2>
+      <input type="file" id="fileInput" class="file-input" multiple accept=".csv,.xlsx">
+      <button type="button" class="pick-btn" id="pickBtn">📁 CSV / XLSX ファイルを選択</button>
+      <div class="drop-area" id="dropArea">またはここに<br>ドラッグ &amp; ドロップ<br><small style="opacity:.7">(.csv または .xlsx)</small></div>
+      <div class="pick-actions">
+        <button type="button" class="btn danger" id="clearBtn">すべてクリア</button>
+      </div>
+    </div>
+
+    <div class="panel" id="samplePanel" style="display:none;">
+      <h2>📁 大会別レース一覧 <span id="sampleCount" style="font-weight:normal;color:#6b7280;font-size:12px"></span></h2>
+      <input type="text" id="sampleSearch" class="sample-search" placeholder="チーム名・レース名で絞り込み…">
+      <div class="sample-list" id="sampleList"></div>
+    </div>
+
+    <div class="panel">
+      <h2>2. 読み込み済みレース <span id="raceCount" style="font-weight:normal;color:#6b7280;font-size:12px"></span></h2>
+      <div class="race-list" id="raceList">
+        <div class="race-empty">CSV を読み込むと一覧に表示されます。<br>名前をクリックで編集できます。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============== 右パネル ============== -->
+  <div>
+    <div class="chart-wrap">
+      <div class="chart-controls">
+        <div class="control-group">
+          <label>横軸:</label>
+          <div class="toggle" id="axisToggle">
+            <button data-mode="time" class="active">⏱ 時間</button>
+            <button data-mode="distance">📏 距離</button>
+          </div>
+        </div>
+        <div class="control-group">
+          <label>レース距離:</label>
+          <input type="number" id="raceDist" class="num-input" value="250" min="50" max="2000" step="50"> m
+        </div>
+        <div class="spacer"></div>
+        <button type="button" class="btn primary" id="exportPng">📷 グラフをPNG保存</button>
+      </div>
+      <svg id="chart" viewBox="0 0 900 460" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="chart-hint">
+        ・各レースは、速度が 0.05 m/s を最初に超えた直前のサンプルをスタート (時刻=0, 距離=0) として整列します。<br>
+        ・「時間」モードは 5 秒刻み、「距離」モードは 10 m 刻みで目盛を表示します。
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>3. 統計サマリ</h2>
+      <table class="stat-table" id="statTable">
+        <thead><tr>
+          <th>レース</th>
+          <th>公式タイム<br>[s]</th>
+          <th>GPS時間<br>[s]</th>
+          <th>平均速度<br>[m/s]</th>
+          <th>最高速度<br>[m/s]</th>
+          <th>到達距離<br>[m]</th>
+          <th id="thGoal">250m通過<br>[s]</th>
+          <th>維持率<br>[%]</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+"use strict";
+
+// ========== 設定 ==========
+const COLORS = ['#3b82f6','#ef4444','#10b981','#f59e0b','#8b5cf6','#ec4899','#14b8a6','#f97316','#0ea5e9','#84cc16'];
+const START_THRESH = 0.05;  // m/s, スタート検出閾値
+const SMOOTH_WIN = 5;       // 移動平均窓
+
+// ========== 状態 ==========
+const state = {
+  races: [],          // {id,name,aligned,selected,color}
+  axisMode: 'time',
+  raceDist: 250,
+};
+
+// ========== CSV パーサ ==========
+// Session行から大会日付 YYYY-MM-DD を抽出
+function extractSessionDate(text) {
+  const m = text.match(/Session[\s,]*:[\s,]*(\d{8})/);
+  if (!m) return null;
+  const s = m[1];
+  return `${s.slice(0,4)}-${s.slice(4,6)}-${s.slice(6,8)}`;
+}
+
+function parseCsv(text) {
+  const lines = text.split(/\r?\n/);
+  if (lines.length && lines[0].charCodeAt(0) === 0xFEFF) lines[0] = lines[0].slice(1);
+  let hi = -1;
+  for (let i = 0; i < Math.min(lines.length, 30); i++) {
+    if (lines[i].startsWith('Time,Cumulative Time')) { hi = i; break; }
+  }
+  if (hi < 0) throw new Error('ヘッダー行 (Time,Cumulative Time...) が見つかりません');
+  // 速度単位を検出 (m/s or km/h)
+  const headerCells = lines[hi].split(',');
+  let speedFactor = 1.0;
+  for (const h of headerCells) {
+    if (h && h.startsWith('Speed') && h.includes('km/h')) { speedFactor = 1.0 / 3.6; break; }
+  }
+  const rows = [];
+  for (let i = hi + 1; i < lines.length; i++) {
+    const c = lines[i].split(',');
+    if (c.length < 7 || !c[1]) continue;
+    const tp = c[1].split(':');
+    let t;
+    if (tp.length === 3) {
+      t = parseFloat(tp[0]) * 3600 + parseFloat(tp[1]) * 60 + parseFloat(tp[2]);
+    } else if (tp.length === 2) {
+      t = parseFloat(tp[0]) * 60 + parseFloat(tp[1]);
+    } else { continue; }
+    const spRaw = parseFloat(c[4]);
+    const sp = Number.isFinite(spRaw) ? spRaw * speedFactor : 0;
+    const d  = parseFloat(c[6]);
+    if (!Number.isFinite(t)) continue;
+    rows.push({ t, sp, d: Number.isFinite(d) ? d : 0 });
+  }
+  if (!rows.length) throw new Error('データ行が0件です');
+  return rows;
+}
+
+// ========== XLSX パーサ (SheetJS を動的ロード) ==========
+let _sheetJSPromise = null;
+function loadSheetJS() {
+  if (_sheetJSPromise) return _sheetJSPromise;
+  _sheetJSPromise = new Promise((resolve, reject) => {
+    if (window.XLSX) { resolve(window.XLSX); return; }
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    s.onload = () => window.XLSX ? resolve(window.XLSX) : reject(new Error('XLSXライブラリ初期化失敗'));
+    s.onerror = () => reject(new Error('XLSXライブラリのロードに失敗(オフラインの可能性、CSV変換版を使ってください)'));
+    document.head.appendChild(s);
+  });
+  return _sheetJSPromise;
+}
+
+function _pad(n, w) { return String(n).padStart(w, '0'); }
+
+async function xlsxFileToCsvText(file) {
+  const XLSX = await loadSheetJS();
+  const buf = await file.arrayBuffer();
+  const wb = XLSX.read(buf, { type: 'array', cellDates: true });
+  const ws = wb.Sheets[wb.SheetNames[0]];
+  const aoa = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: null });
+
+  let headerIdx = -1;
+  for (let i = 0; i < aoa.length; i++) {
+    if (aoa[i] && aoa[i][0] === 'Time') { headerIdx = i; break; }
+  }
+  if (headerIdx < 0) throw new Error('xlsxにヘッダ行(Time, Cumulative Time...)が見つかりません');
+
+  const lines = [];
+  for (let i = 0; i < headerIdx; i++) {
+    const row = aoa[i] || [];
+    lines.push(row.map(v => v == null ? '' : String(v)).join(','));
+  }
+  // ヘッダ行(Speed (km/h) のままにしておく → parseCsv が単位検出して変換する)
+  lines.push((aoa[headerIdx] || []).map(v => v == null ? '' : String(v)).join(','));
+
+  for (let i = headerIdx + 1; i < aoa.length; i++) {
+    const row = aoa[i] || [];
+    if (row.every(v => v == null || v === '')) continue;
+    const cells = row.map((v, ci) => {
+      if (v == null) return '';
+      if (ci === 0 && v instanceof Date) {
+        return `${_pad(v.getMinutes(),2)}:${_pad(v.getSeconds(),2)}.${_pad(v.getMilliseconds(),3)}`;
+      }
+      if (ci === 1) {
+        let total;
+        if (v instanceof Date) {
+          total = v.getHours() * 3600 + v.getMinutes() * 60 + v.getSeconds() + v.getMilliseconds() / 1000;
+        } else if (typeof v === 'number') {
+          total = v * 86400;
+        } else return String(v);
+        const mm = Math.floor(total / 60);
+        const ss = (total - mm * 60);
+        return `${_pad(mm,2)}:${ss.toFixed(3).padStart(6,'0')}`;
+      }
+      return String(v);
+    });
+    lines.push(cells.join(','));
+  }
+  return lines.join('\n');
+}
+
+function alignStart(raw, thresh = START_THRESH) {
+  const idx = raw.findIndex(r => r.sp > thresh);
+  if (idx <= 0) return raw.map(r => ({ ...r }));
+  const t0 = raw[idx - 1].t;
+  const d0 = raw[idx - 1].d || 0;
+  return raw.slice(idx - 1).map(r => ({ t: r.t - t0, sp: r.sp, d: (r.d || 0) - d0 }));
+}
+
+// ========== レース管理 ==========
+function defaultName(filename) {
+  return filename.replace(/\.csv$/i, '');
+}
+
+function addRace(filename, text) {
+  try {
+    const raw = parseCsv(text);
+    const aligned = alignStart(raw);
+    const sessionDate = extractSessionDate(text);
+    state.races.push({
+      id: Date.now() + Math.random(),
+      name: defaultName(filename),
+      aligned,
+      selected: true,
+      color: COLORS[state.races.length % COLORS.length],
+      sessionDate,
+    });
+    render();
+  } catch (e) {
+    alert(`${filename} の解析に失敗:\n${e.message}`);
+  }
+}
+
+function loadFiles(files) {
+  const valid = Array.from(files).filter(f => /\.(csv|xlsx)$/i.test(f.name));
+  if (!valid.length) { alert('CSVまたはXLSXファイルを選択してください'); return; }
+  valid.forEach(async f => {
+    try {
+      let text;
+      if (/\.xlsx$/i.test(f.name)) {
+        text = await xlsxFileToCsvText(f);
+      } else {
+        text = await new Promise((res, rej) => {
+          const r = new FileReader();
+          r.onload = e => res(e.target.result);
+          r.onerror = () => rej(new Error('FileReader error'));
+          r.readAsText(f, 'utf-8');
+        });
+      }
+      addRace(f.name, text);
+    } catch (e) {
+      alert(`${f.name} の読み込みに失敗:\n${e.message}`);
+    }
+  });
+}
+
+// ========== イベント ==========
+const fileInput = document.getElementById('fileInput');
+document.getElementById('pickBtn').addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', e => {
+  loadFiles(e.target.files);
+  e.target.value = ''; // 同じファイル再選択を許可
+});
+
+const dropArea = document.getElementById('dropArea');
+['dragenter', 'dragover'].forEach(ev => {
+  dropArea.addEventListener(ev, e => { e.preventDefault(); dropArea.classList.add('drag'); });
+});
+['dragleave', 'drop'].forEach(ev => {
+  dropArea.addEventListener(ev, e => { e.preventDefault(); dropArea.classList.remove('drag'); });
+});
+dropArea.addEventListener('drop', e => loadFiles(e.dataTransfer.files));
+// 全ページにもドロップ対応
+document.addEventListener('dragover', e => e.preventDefault());
+document.addEventListener('drop', e => { e.preventDefault(); if (e.target.closest('.panel')) return; });
+
+document.getElementById('clearBtn').addEventListener('click', () => {
+  if (!state.races.length) return;
+  if (confirm('読み込み済みのレースをすべて削除しますか?')) {
+    state.races = []; render();
+  }
+});
+
+document.querySelectorAll('#axisToggle button').forEach(b => {
+  b.addEventListener('click', () => {
+    state.axisMode = b.dataset.mode;
+    document.querySelectorAll('#axisToggle button').forEach(x => x.classList.toggle('active', x === b));
+    render();
+  });
+});
+
+const raceDistInput = document.getElementById('raceDist');
+raceDistInput.addEventListener('input', e => {
+  state.raceDist = parseFloat(e.target.value) || 250;
+  document.getElementById('thGoal').innerHTML = `${state.raceDist}m通過<br>[s]`;
+  renderStats();
+});
+
+document.getElementById('exportPng').addEventListener('click', exportChartPng);
+
+// ========== レース一覧 ==========
+function renderRaceList() {
+  const list = document.getElementById('raceList');
+  const count = document.getElementById('raceCount');
+  count.textContent = state.races.length ? `(${state.races.length})` : '';
+  if (!state.races.length) {
+    list.innerHTML = '<div class="race-empty">CSV を読み込むと一覧に表示されます。<br>名前をクリックで編集できます。</div>';
+    return;
+  }
+  list.innerHTML = '';
+  state.races.forEach((r, i) => {
+    const item = document.createElement('div');
+    item.className = 'race-item';
+    const checked = r.selected ? 'checked' : '';
+    const eventName = getEventName(r);
+    const eventHtml = eventName ? `<div class="event-sub" title="${escapeHtml(eventName)}">📅 ${escapeHtml(eventName)}</div>` : '';
+    item.innerHTML = `
+      <input type="checkbox" ${checked}>
+      <span class="swatch" style="background:${r.color}"></span>
+      <div class="name-wrap">
+        <span class="name" title="クリックで編集">${escapeHtml(r.name)}</span>
+        ${eventHtml}
+      </div>
+      <span class="x" title="削除">×</span>
+    `;
+    item.querySelector('input').addEventListener('change', e => {
+      r.selected = e.target.checked; render();
+    });
+    item.querySelector('.x').addEventListener('click', () => {
+      state.races.splice(i, 1); render();
+    });
+    const nameEl = item.querySelector('.name');
+    nameEl.addEventListener('click', () => {
+      nameEl.setAttribute('contenteditable', 'true');
+      nameEl.focus();
+      const range = document.createRange();
+      range.selectNodeContents(nameEl);
+      const sel = window.getSelection();
+      sel.removeAllRanges(); sel.addRange(range);
+    });
+    const finishEdit = () => {
+      nameEl.removeAttribute('contenteditable');
+      r.name = nameEl.textContent.trim() || defaultName('レース' + (i+1));
+      nameEl.textContent = r.name;
+      renderStats();
+    };
+    nameEl.addEventListener('blur', finishEdit);
+    nameEl.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); nameEl.blur(); }
+      if (e.key === 'Escape') { nameEl.textContent = r.name; nameEl.blur(); }
+    });
+    list.appendChild(item);
+  });
+}
+
+function escapeHtml(s) {
+  return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+}
+
+// ========== チャート ==========
+function render() { renderRaceList(); renderChart(); renderStats(); }
+
+const SVG_NS = 'http://www.w3.org/2000/svg';
+function svgEl(tag, attrs) {
+  const el = document.createElementNS(SVG_NS, tag);
+  for (const k in attrs) el.setAttribute(k, attrs[k]);
+  return el;
+}
+
+function smooth(arr, w = SMOOTH_WIN) {
+  const out = [];
+  for (let i = 0; i < arr.length; i++) {
+    const a = Math.max(0, i - Math.floor(w / 2));
+    const b = Math.min(arr.length, i + Math.floor(w / 2) + 1);
+    let s = 0; for (let j = a; j < b; j++) s += arr[j].sp;
+    out.push({ ...arr[i], sp: s / (b - a) });
+  }
+  return out;
+}
+
+function renderChart() {
+  const svg = document.getElementById('chart');
+  svg.innerHTML = '';
+  const W = 900, H = 460;
+  const M = { l: 56, r: 24, t: 36, b: 48 };
+  const innerW = W - M.l - M.r, innerH = H - M.t - M.b;
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+
+  const visible = state.races.filter(r => r.selected);
+  if (!visible.length) {
+    svg.appendChild(svgEl('text', {
+      x: W/2, y: H/2, 'text-anchor': 'middle', fill: '#9ca3af', 'font-size': 14,
+    })).textContent = 'CSV を読み込むと、ここに速度プロファイルが表示されます';
+    return;
+  }
+
+  const isTime = state.axisMode === 'time';
+  let xmax = 0, ymax = 0;
+  visible.forEach(r => {
+    r.aligned.forEach(d => {
+      const x = isTime ? d.t : d.d;
+      if (x > xmax) xmax = x;
+      if (d.sp > ymax) ymax = d.sp;
+    });
+  });
+  if (isTime) xmax = Math.min(xmax, 120);
+  xmax = Math.max(xmax, isTime ? 30 : 50);
+  ymax = Math.max(Math.ceil((ymax + 0.5) * 2) / 2, 5);
+
+  const xScale = v => M.l + (v / xmax) * innerW;
+  const yScale = v => M.t + innerH - (v / ymax) * innerH;
+
+  // 背景
+  svg.appendChild(svgEl('rect', {
+    x: M.l, y: M.t, width: innerW, height: innerH,
+    fill: '#fafbfc', stroke: 'none'
+  }));
+
+  // gridlines
+  const xStep = isTime ? 5 : 10;
+  for (let xv = 0; xv <= xmax + 0.001; xv += xStep) {
+    const x = xScale(xv);
+    const ln = svgEl('line', {
+      x1: x, y1: M.t, x2: x, y2: M.t + innerH,
+      stroke: '#e5e7eb', 'stroke-width': 1, 'stroke-dasharray': '3,3'
+    });
+    svg.appendChild(ln);
+    const tk = svgEl('text', {
+      x, y: M.t + innerH + 16, 'text-anchor': 'middle',
+      fill: '#6b7280', 'font-size': 11
+    });
+    tk.textContent = String(Math.round(xv));
+    svg.appendChild(tk);
+  }
+  for (let yv = 0; yv <= ymax + 0.001; yv += 1) {
+    const y = yScale(yv);
+    svg.appendChild(svgEl('line', {
+      x1: M.l, y1: y, x2: M.l + innerW, y2: y,
+      stroke: '#e5e7eb', 'stroke-width': 1, 'stroke-dasharray': '3,3'
+    }));
+    const tk = svgEl('text', {
+      x: M.l - 8, y: y + 4, 'text-anchor': 'end',
+      fill: '#6b7280', 'font-size': 11
+    });
+    tk.textContent = String(yv);
+    svg.appendChild(tk);
+  }
+  // 軸線
+  svg.appendChild(svgEl('line', {
+    x1: M.l, y1: M.t, x2: M.l, y2: M.t + innerH, stroke: '#9ca3af', 'stroke-width': 1.5
+  }));
+  svg.appendChild(svgEl('line', {
+    x1: M.l, y1: M.t + innerH, x2: M.l + innerW, y2: M.t + innerH, stroke: '#9ca3af', 'stroke-width': 1.5
+  }));
+  // 軸ラベル
+  const xLab = svgEl('text', {
+    x: M.l + innerW/2, y: H - 10, 'text-anchor': 'middle',
+    'font-size': 12, 'font-weight': 600, fill: '#4b5563'
+  });
+  xLab.textContent = isTime ? '時間 [s]' : '距離 [m]';
+  svg.appendChild(xLab);
+  const yLab = svgEl('text', {
+    x: 14, y: M.t + innerH/2,
+    transform: `rotate(-90 14 ${M.t + innerH/2})`,
+    'text-anchor': 'middle', 'font-size': 12, 'font-weight': 600, fill: '#4b5563'
+  });
+  yLab.textContent = '速度 [m/s]';
+  svg.appendChild(yLab);
+  // タイトル
+  const title = svgEl('text', {
+    x: M.l + innerW/2, y: 20, 'text-anchor': 'middle',
+    'font-size': 14, 'font-weight': 700, fill: '#1e3a8a'
+  });
+  title.textContent = `GPS 速度プロファイル ${visible.length > 1 ? `(${visible.length}レース重ね描き)` : ''}`;
+  svg.appendChild(title);
+
+  // ライン
+  visible.forEach(r => {
+    const data = smooth(r.aligned).filter(d => {
+      const v = isTime ? d.t : d.d;
+      return v <= xmax && v >= 0;
+    });
+    if (!data.length) return;
+    let path = '';
+    data.forEach((d, i) => {
+      const x = xScale(isTime ? d.t : d.d);
+      const y = yScale(d.sp);
+      path += (i === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1) + ' ';
+    });
+    svg.appendChild(svgEl('path', {
+      d: path, stroke: r.color, 'stroke-width': 2, fill: 'none', opacity: 0.95,
+      'stroke-linejoin': 'round'
+    }));
+  });
+
+  // 凡例(右上)
+  const legend = svgEl('g', { transform: `translate(${M.l + innerW - 12}, ${M.t + 14})` });
+  visible.forEach((r, i) => {
+    const y = i * 18;
+    legend.appendChild(svgEl('rect', {
+      x: -190, y: y - 11, width: 190, height: 18, fill: '#fff', opacity: 0.88, rx: 3
+    }));
+    legend.appendChild(svgEl('line', {
+      x1: -184, y1: y, x2: -168, y2: y, stroke: r.color, 'stroke-width': 3
+    }));
+    const t = svgEl('text', {
+      x: -162, y: y + 4, 'font-size': 11, fill: '#1f2937'
+    });
+    const nm = r.name.length > 22 ? r.name.slice(0, 21) + '…' : r.name;
+    t.textContent = nm;
+    legend.appendChild(t);
+  });
+  svg.appendChild(legend);
+}
+
+// ========== 統計サマリ ==========
+function timeAtDistance(aligned, target) {
+  for (const d of aligned) if (d.d >= target) return d.t;
+  return null;
+}
+
+function renderStats() {
+  const tb = document.querySelector('#statTable tbody');
+  if (!state.races.length) {
+    tb.innerHTML = '<tr><td colspan="8" class="stat-empty">データなし</td></tr>';
+    return;
+  }
+  tb.innerHTML = state.races.map(r => {
+    const a = r.aligned;
+    const sp = a.map(d => d.sp).filter(s => s > 0);
+    const maxSp = sp.length ? Math.max(...sp) : 0;
+    const avgSp = sp.length ? sp.reduce((x,y) => x + y, 0) / sp.length : 0;
+    const dur = a.length ? a[a.length - 1].t : 0;
+    const dist = a.length ? Math.max(...a.map(d => d.d)) : 0;
+    const t250 = timeAtDistance(a, state.raceDist);
+    const maintain = maxSp ? (avgSp / maxSp * 100) : 0;
+    const official = lookupOfficialTime(r);
+    let officialCell = '<span style="color:#9ca3af">—</span>';
+    if (official && official.time_sec) {
+      const rk = official.rank ? ` <span style="color:#6b7280;font-size:11px">(${official.rank}着)</span>` : '';
+      officialCell = `<strong style="color:#1e3a8a">${official.time_sec.toFixed(2)}</strong>${rk}`;
+    }
+    return `
+      <tr>
+        <td>
+          <div class="name-cell">
+            <span class="swatch" style="background:${r.color}"></span>
+            <div style="min-width:0;flex:1;">
+              <div class="label" title="${escapeHtml(r.name)}">${escapeHtml(r.name)}</div>
+              ${(() => { const en = getEventName(r); return en ? `<div style="font-size:10px;color:#6b7280;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHtml(en)}">${escapeHtml(en)}</div>` : ''; })()}
+            </div>
+          </div>
+        </td>
+        <td>${officialCell}</td>
+        <td>${dur.toFixed(1)}</td>
+        <td>${avgSp.toFixed(2)}</td>
+        <td>${maxSp.toFixed(2)}</td>
+        <td>${dist.toFixed(1)}</td>
+        <td>${t250 !== null ? t250.toFixed(1) : '—'}</td>
+        <td>${maintain.toFixed(1)}</td>
+      </tr>`;
+  }).join('');
+}
+
+// ========== PNG エクスポート ==========
+function exportChartPng() {
+  if (!state.races.some(r => r.selected)) { alert('表示中のレースがありません'); return; }
+  const svg = document.getElementById('chart');
+  const xml = new XMLSerializer().serializeToString(svg);
+  const svgBlob = new Blob(['<?xml version="1.0" standalone="no"?>\n', xml], {type: 'image/svg+xml;charset=utf-8'});
+  const url = URL.createObjectURL(svgBlob);
+  const img = new Image();
+  img.onload = () => {
+    const W = 1800, H = 920;
+    const canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H);
+    ctx.drawImage(img, 0, 0, W, H);
+    URL.revokeObjectURL(url);
+    canvas.toBlob(blob => {
+      const a = document.createElement('a');
+      const ts = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+      a.href = URL.createObjectURL(blob);
+      a.download = `speed_profile_${ts}.png`;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+    }, 'image/png');
+  };
+  img.onerror = () => { alert('PNG生成に失敗しました'); URL.revokeObjectURL(url); };
+  img.src = url;
+}
+
+// ========== manifest.json / race_results.json ==========
+let manifestData = null;
+let raceResults = null;
+
+async function loadManifest() {
+  try {
+    const res = await fetch('manifest.json', { cache: 'no-cache' });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (e) { return null; }
+}
+
+async function loadRaceResults() {
+  try {
+    const res = await fetch('race_results.json', { cache: 'no-cache' });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (e) { return null; }
+}
+
+function extractMeta(race) {
+  const url = race._sourceUrl || '';
+  let eventId = null;
+  const m1 = url.match(/data\/([\d\-]+)\//);
+  if (m1) eventId = m1[1];
+  // Session行から取得した日付をフォールバックで使用
+  if (!eventId && race.sessionDate) eventId = race.sessionDate;
+  const base = (url.split('/').pop() || race.name || '').replace(/\.(csv|xlsx)$/i, '');
+  const m2 = base.match(/^(R\d+)_([^_]+)_(\d+)_(.+)$/);
+  if (m2) return { eventId, raceNo: m2[1], klass: m2[2], lane: parseInt(m2[3]), team: m2[4] };
+  return { eventId, raceNo: null, klass: null, lane: null, team: null };
+}
+
+// 大会名を取得 (race_results.json から)
+function getEventName(race) {
+  const meta = extractMeta(race);
+  const eid = meta.eventId;
+  if (!eid) return null;
+  if (raceResults && raceResults.events && raceResults.events[eid]) {
+    return raceResults.events[eid].event_name || eid;
+  }
+  // race_results にない場合は manifest から取得
+  if (manifestData && manifestData.events) {
+    const ev = manifestData.events.find(e => e.id === eid);
+    if (ev) return ev.name;
+  }
+  return eid;
+}
+
+function lookupOfficialTime(race) {
+  if (!raceResults || !raceResults.events) return null;
+  const meta = extractMeta(race);
+  if (!meta.raceNo) return null;
+  const eventIds = meta.eventId ? [meta.eventId] : Object.keys(raceResults.events);
+  for (const eid of eventIds) {
+    const ev = raceResults.events[eid];
+    if (!ev) continue;
+    const candidates = (ev.races || []).filter(r => r.race_no === meta.raceNo);
+    let target = null;
+    if (candidates.length === 1) target = candidates[0];
+    else if (candidates.length > 1 && meta.klass) {
+      target = candidates.find(r => r.class && (r.class.includes(meta.klass) || meta.klass.includes(r.class))) || candidates[0];
+    } else if (candidates.length > 1) target = candidates[0];
+    if (!target) continue;
+    let entry = target.lanes.find(l => l.lane === meta.lane);
+    if (!entry && meta.team) {
+      entry = target.lanes.find(l => l.team && (l.team.includes(meta.team) || meta.team.includes(l.team)));
+    }
+    if (entry) return entry;
+  }
+  return null;
+}
+
+function renderSampleList(filter = '') {
+  const panel = document.getElementById('samplePanel');
+  const list = document.getElementById('sampleList');
+  const count = document.getElementById('sampleCount');
+  if (!manifestData || !manifestData.events || !manifestData.events.length) {
+    panel.style.display = 'none';
+    return;
+  }
+  panel.style.display = '';
+  const f = filter.toLowerCase().trim();
+  let total = 0, matched = 0;
+  let html = '';
+  manifestData.events.forEach(ev => {
+    const races = (ev.races || []).filter(r => {
+      total++;
+      if (!f) return true;
+      const hay = `${r.team || ''} ${r.race || ''} ${r.file || ''}`.toLowerCase();
+      return hay.includes(f);
+    });
+    matched += races.length;
+    if (!races.length) return;
+    html += `<div class="sample-event">`;
+    html += `<div class="sample-event-name">${escapeHtml(ev.name)}</div>`;
+    races.forEach(r => {
+      const label = r.team ? `${escapeHtml(r.team)} <span style="color:#9ca3af">(${escapeHtml(r.race || '')})</span>` : escapeHtml(r.race || r.file);
+      html += `<div class="sample-race" data-file="${escapeHtml(r.file)}" data-name="${escapeHtml(r.team || r.race || r.file)}">
+        <span class="sample-race-mark">＋</span>
+        <span class="sample-race-name">${label}</span>
+      </div>`;
+    });
+    html += `</div>`;
+  });
+  if (!matched) html = '<div class="sample-empty">該当するレースが見つかりません</div>';
+  list.innerHTML = html;
+  count.textContent = f ? `(${matched}/${total})` : `(${total}件)`;
+  list.querySelectorAll('.sample-race').forEach(el => {
+    el.addEventListener('click', () => loadSampleByUrl(el.dataset.file, el.dataset.name));
+  });
+}
+
+async function loadSampleByUrl(url, displayName) {
+  // すでに同じURLが読み込み済みならスキップ
+  if (state.races.some(r => r._sourceUrl === url)) {
+    alert('このレースはすでに読み込み済みです');
+    return;
+  }
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const text = await res.text();
+    const raw = parseCsv(text);
+    const aligned = alignStart(raw);
+    const sessionDate = extractSessionDate(text);
+    state.races.push({
+      id: Date.now() + Math.random(),
+      name: displayName || url.split('/').pop().replace(/\.csv$/i, ''),
+      aligned,
+      selected: true,
+      color: COLORS[state.races.length % COLORS.length],
+      _sourceUrl: url,
+      sessionDate,
+    });
+    render();
+  } catch (e) {
+    alert(`${url} の読み込みに失敗:\n${e.message}`);
+  }
+}
+
+document.getElementById('sampleSearch').addEventListener('input', e => renderSampleList(e.target.value));
+
+// ========== URL パラメータ ==========
+function applyUrlParams() {
+  const params = new URLSearchParams(location.search);
+  const team = params.get('team');
+  if (team) {
+    const banner = document.getElementById('teamBanner');
+    banner.innerHTML = `🎯 <strong>${escapeHtml(team)}</strong> 向け表示 - 下のグラフで貴チームのレース速度プロファイルが確認できます。`;
+    banner.style.display = '';
+    document.title = `${team} - ドラゴンボート レース分析`;
+  }
+  const racesParam = params.get('races');
+  if (racesParam) {
+    const files = racesParam.split(',').map(s => s.trim()).filter(Boolean);
+    files.forEach(f => loadSampleByUrl(f, null));
+  }
+}
+
+// ========== 初期化 ==========
+render();
+(async () => {
+  manifestData = await loadManifest();
+  renderSampleList();
+  applyUrlParams();
+  raceResults = await loadRaceResults();
+  if (state.races.length) renderStats();
+})();
+</script>
+</body>
+</html>
